@@ -23,3 +23,15 @@ int main(int argc, char** argv) {
             int k = atoi(argv[i + 3]);
             unsigned long long seed = strtoull(argv[i + 4], nullptr, 10);
             generateCampus(n, radius, k, seed);
+            return 0;
+        }
+    }
+    if (structure != 'A' && structure != 'B') {
+        fprintf(stderr, "use: run --structure A|B\n");
+        return 1;
+    }
+
+    Graph g;
+    if (!readGraph(stdin, g)) {
+        fprintf(stderr, "bad input\n");
+        return 1;
