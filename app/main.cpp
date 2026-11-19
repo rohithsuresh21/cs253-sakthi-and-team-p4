@@ -44,3 +44,5 @@ int main(int argc, char** argv) {
     MSTResult r = (structure == 'A') ? kruskal(g, compress) : prim(g);
     printf("%lld\n", r.total);
     printf("%lld\n", zoneSpacing(r, g.n, g.k));
+    return 0;
+}
