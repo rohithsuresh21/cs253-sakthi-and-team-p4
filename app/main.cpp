@@ -35,3 +35,12 @@ int main(int argc, char** argv) {
     if (!readGraph(stdin, g)) {
         fprintf(stderr, "bad input\n");
         return 1;
+    }
+    if (!isConnected(g)) {
+        printf("DISCONNECTED\n");
+        return 0;
+    }
+
+    MSTResult r = (structure == 'A') ? kruskal(g, compress) : prim(g);
+    printf("%lld\n", r.total);
+    printf("%lld\n", zoneSpacing(r, g.n, g.k));
