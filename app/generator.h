@@ -11,3 +11,9 @@ inline void generateCampus(int n, double radius, int k, unsigned long long seed)
     std::vector<double> x(n), y(n);
     for (int i = 0; i < n; i++) {
         x[i] = pick(rng);
+        y[i] = pick(rng);
+    }
+    std::vector<Edge> edges;
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            double dx = x[i] - x[j];
