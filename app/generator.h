@@ -24,3 +24,10 @@ inline void generateCampus(int n, double radius, int k, unsigned long long seed)
                 if (w < 1) w = 1;
                 edges.push_back({i, j, w});
             }
+        }
+    }
+    printf("%d %zu %d\n", n, edges.size(), k);
+    for (const Edge& e : edges) {
+        printf("%d %d %lld\n", e.u + 1, e.v + 1, e.w);
+    }
+}
