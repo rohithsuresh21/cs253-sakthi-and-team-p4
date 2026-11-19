@@ -17,3 +17,10 @@ inline void generateCampus(int n, double radius, int k, unsigned long long seed)
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
             double dx = x[i] - x[j];
+            double dy = y[i] - y[j];
+            double d2 = dx * dx + dy * dy;
+            if (d2 <= radius * radius) {
+                long long w = std::llround(std::sqrt(d2) * 1000.0);
+                if (w < 1) w = 1;
+                edges.push_back({i, j, w});
+            }
