@@ -59,3 +59,35 @@ for (int n : sizes) {
 
             Graph g = randomGraph(n, m, 1000000, true, rng, 2);
             std::vector<double> kr, pr;
+for (int r = 0; r < repeats; r++) {
+                double a = timeKruskal(g, true);
+                double b = timePrim(g);
+                kr.push_back(a);
+                pr.push_back(b);
+                fprintf(raw, "%d,%zu,%.2f,%d,kruskal,%.4f\n", n, g.edges.size(), (double)g.edges.size() / n, r, a);
+                fprintf(raw, "%d,%zu,%.2f,%d,prim,%.4f\n", n, g.edges.size(), (double)g.edges.size() / n, r, b);
+            }
+double km = median(kr);
+            double pm = median(pr);
+            fprintf(summary, "%d,%zu,%.2f,%.4f,%.4f,%s\n", n, g.edges.size(), (double)g.edges.size() / n, km, pm,
+                    pm < km ? "prim" : "kruskal");
+            MSTResult pr1 = prim(g);
+            fprintf(heap, "%d,%zu,%.2f,%lld,%lld,%lld,%lld\n", n, g.edges.size(), (double)g.edges.size() / n, pr1.maxHeap,
+                    pr1.pushes, pr1.pops, pr1.stalePops);
+            printf("n=%d m=%zu kruskal=%.3f ms prim=%.3f ms\n", n, g.edges.size(), km, pm);
+        }
+    }
+ int ufSizes[][2] = {{2000, 10}, {20000, 3}, {20000, 10}, {50000, 5}};
+    for (auto& s : ufSizes) {
+        int n = s[0];
+        long long m = (long long)s[1] * n;
+        Graph g = randomGraph(n, m, 1000000, true, rng, 2);
+        std::vector<double> with, without;
+        for (int r = 0; r < repeats; r++) {
+            with.push_back(timeKruskal(g, true));
+            without.push_back(timeKruskal(g, false));
+        }
+        fprintf(uf, "%d,%zu,%.4f,%.4f\n", n, g.edges.size(), median(with), median(without));
+        printf("union-find n=%d m=%zu with=%.3f ms without=%.3f ms\n", n, g.edges.size(), median(with), median(without));
+    }
+
