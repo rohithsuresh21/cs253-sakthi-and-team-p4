@@ -90,4 +90,10 @@ double km = median(kr);
         fprintf(uf, "%d,%zu,%.4f,%.4f\n", n, g.edges.size(), median(with), median(without));
         printf("union-find n=%d m=%zu with=%.3f ms without=%.3f ms\n", n, g.edges.size(), median(with), median(without));
     }
-
+fclose(raw);
+    fclose(summary);
+    fclose(uf);
+    fclose(heap);
+    printf("done (%lld)\n", sink % 10);
+    return 0;
+}
