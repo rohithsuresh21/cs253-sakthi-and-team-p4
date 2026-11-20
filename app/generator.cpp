@@ -1,13 +1,13 @@
+#pragma once
 #include <cmath>
-#include <cstdio>
-#include <cstdlib>
+#include <iostream>
 #include <random>
 #include <vector>
-#include "../src/common/graph.h"
+#include "../src/common/graph.cpp"
 
 using namespace std;
 
-void generateCampus(int n, double radius, int k, unsigned long long seed) {
+inline void generateCampus(int n, double radius, int k, unsigned long long seed) {
     mt19937_64 rng(seed);
     uniform_real_distribution<double> pick(0.0, 1000.0);
     vector<double> x(n), y(n);
@@ -28,23 +28,8 @@ void generateCampus(int n, double radius, int k, unsigned long long seed) {
             }
         }
     }
-    printf("%d %zu %d\n", n, edges.size(), k);
+    cout << n << ' ' << edges.size() << ' ' << k << '\n';
     for (const Edge& e : edges) {
-        printf("%d %d %lld\n", e.u + 1, e.v + 1, e.w);
+        cout << e.u + 1 << ' ' << e.v + 1 << ' ' << e.w << '\n';
     }
-}
-
-// Usage: ./generator n radius k seed > input.txt
-int main(int argc, char* argv[]) {
-    if (argc != 5) {
-        fprintf(stderr, "Usage: %s n radius k seed\n", argv[0]);
-        return 1;
-    }
-    int n = atoi(argv[1]);
-    double radius = atof(argv[2]);
-    int k = atoi(argv[3]);
-    unsigned long long seed = strtoull(argv[4], nullptr, 10);
-
-    generateCampus(n, radius, k, seed);
-    return 0;
 }
