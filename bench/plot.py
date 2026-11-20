@@ -27,4 +27,18 @@ plt.legend(fontsize=7)
 plt.grid(True, alpha=0.3)
 plt.savefig("results/figures/runtime_vs_density.png", dpi=150, bbox_inches="tight")
 plt.close()
+uf = read("results/union_find.csv")
+labels = [r["n"] + "\nm=" + r["m"] for r in uf]
+x = range(len(uf))
+plt.figure(figsize=(8, 5))
+plt.bar([i - 0.2 for i in x], [float(r["with_compression_median_ms"]) for r in uf], width=0.4, label="with path compression")
+plt.bar([i + 0.2 for i in x], [float(r["without_compression_median_ms"]) for r in uf], width=0.4, label="without path compression")
+plt.xticks(list(x), labels)
+plt.xlabel("graph (n, m)")
+plt.ylabel("median Kruskal time (ms)")
+plt.title("Union-find: path compression on and off")
+plt.legend()
+plt.savefig("results/figures/union_find_comparison.png", dpi=150, bbox_inches="tight")
+plt.close()
+
 
