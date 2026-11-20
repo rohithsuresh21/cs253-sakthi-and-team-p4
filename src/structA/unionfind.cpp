@@ -24,3 +24,20 @@ struct UnionFind {
         }
         return root;
     }
+
+
+    bool join(int a, int b) {
+        int ra = find(a);
+        int rb = find(b);
+        if (ra == rb) return false;
+        if (rnk[ra] < rnk[rb]) {
+            parent[ra] = rb;
+        } else if (rnk[ra] > rnk[rb]) {
+            parent[rb] = ra;
+        } else {
+            parent[rb] = ra;
+            rnk[ra]++;
+        }
+        return true;
+    }
+};
