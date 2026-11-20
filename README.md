@@ -311,7 +311,7 @@ All `.cpp` files include each other directly, so compile only the entry file (fo
 | Role | Name | Roll number | GitHub |
 |---|---|---|---|
 | 1. Kruskal (Structure A) | Rohith M S | | rohithsuresh21 |
-| 2. Prim (Structure B) | | | |
+| 2. Prim (Structure B) |  | | |
 | 3. Application | | | |
 | 4. Correctness and testing | | | |
 | 5. Measurements and charts | | | |
