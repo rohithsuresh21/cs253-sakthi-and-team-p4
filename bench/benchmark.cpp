@@ -48,3 +48,14 @@ int main() {
 
     int sizes[] = {200, 500, 1000, 2000};
     int multipliers[] = {3, 5, 10, 25, 50, 0};
+for (int n : sizes) {
+        long long totalPairs = (long long)n * (n - 1) / 2;
+        long long lastM = -1;
+        for (int mult : multipliers) {
+            long long m = (mult == 0) ? totalPairs : (long long)mult * n;
+            if (m > totalPairs) m = totalPairs;
+            if (m == lastM) continue;
+            lastM = m;
+
+            Graph g = randomGraph(n, m, 1000000, true, rng, 2);
+            std::vector<double> kr, pr;
