@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 
 os.makedirs("results", exist_ok=True)
+os.makedirs("results/figures", exist_ok=True)
 
 
 def read_csv(path):
@@ -30,7 +31,7 @@ plt.ylabel("average time (ms)")
 plt.title("Average runtime by graph density")
 plt.legend(fontsize=7)
 plt.grid(True, alpha=0.3)
-plt.savefig("results/runtime_vs_density.png", dpi=120, bbox_inches="tight")
+plt.savefig("results/figures/runtime_vs_density.png", dpi=120, bbox_inches="tight")
 plt.close()
 
 union_find = read_csv("results/union_find.csv")
@@ -44,7 +45,7 @@ plt.ylabel("average Kruskal time (ms)")
 plt.title("Union-find path compression")
 plt.legend()
 plt.grid(True, axis="y", alpha=0.3)
-plt.savefig("results/union_find_comparison.png", dpi=120, bbox_inches="tight")
+plt.savefig("results/figures/union_find_comparison.png", dpi=120, bbox_inches="tight")
 plt.close()
 
 heap = read_csv("results/prim_heap.csv")
@@ -58,7 +59,7 @@ plt.ylabel("maximum heap size")
 plt.title("Prim lazy deletion heap size")
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.savefig("results/prim_heap_size.png", dpi=120, bbox_inches="tight")
+plt.savefig("results/figures/prim_heap_size.png", dpi=120, bbox_inches="tight")
 plt.close()
 
 crossover_path = "results/crossover.csv"
@@ -75,7 +76,7 @@ if os.path.exists(crossover_path):
     plt.title("Prim/Kruskal crossover")
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig("results/crossover.png", dpi=120, bbox_inches="tight")
+    plt.savefig("results/figures/crossover.png", dpi=120, bbox_inches="tight")
     plt.close()
 
 print("Figures saved in results")
