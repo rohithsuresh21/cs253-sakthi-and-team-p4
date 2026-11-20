@@ -30,10 +30,9 @@ double timePrim(const Graph& graph) {
     return std::chrono::duration<double, std::milli>(stop - start).count();
 }
 
-double average(const std::vector<double>& values) {
-    double total = 0.0;
-    for (double value : values) total += value;
-    return values.empty() ? 0.0 : total / values.size();
+double medianOfFive(std::vector<double> values) {
+    std::sort(values.begin(), values.end());
+    return values[2];
 }
 
 }
@@ -44,20 +43,23 @@ int main() {
     FILE* raw = std::fopen("results/timings_raw.csv", "w");
     FILE* summary = std::fopen("results/timings_summary.csv", "w");
     FILE* unionFind = std::fopen("results/union_find.csv", "w");
+    FILE* unionFindRaw = std::fopen("results/union_find_raw.csv", "w");
     FILE* heap = std::fopen("results/prim_heap.csv", "w");
 
-    if (!raw || !summary || !unionFind || !heap) {
+    if (!raw || !summary || !unionFind || !unionFindRaw || !heap) {
         std::cerr << "Could not open result files; run from repository root\n";
         if (raw) std::fclose(raw);
         if (summary) std::fclose(summary);
         if (unionFind) std::fclose(unionFind);
+        if (unionFindRaw) std::fclose(unionFindRaw);
         if (heap) std::fclose(heap);
         return 1;
     }
 
     std::fprintf(raw, "seed,n,m,edges_per_vertex,repeat,algorithm,ms\n");
-    std::fprintf(summary, "seed,n,m,edges_per_vertex,repetitions,kruskal_avg_ms,prim_avg_ms,faster\n");
-    std::fprintf(unionFind, "seed,n,m,repetitions,with_compression_avg_ms,without_compression_avg_ms\n");
+    std::fprintf(summary, "seed,n,m,edges_per_vertex,repetitions,kruskal_median_ms,prim_median_ms,faster\n");
+    std::fprintf(unionFind, "seed,n,m,repetitions,with_compression_median_ms,without_compression_median_ms\n");
+    std::fprintf(unionFindRaw, "seed,n,m,repeat,compression,ms\n");
     std::fprintf(heap, "seed,n,m,edges_per_vertex,max_heap_size,pushes,pops,stale_pops\n");
 
     std::mt19937_64 rng(seed);
@@ -94,14 +96,14 @@ int main() {
                              graph.edges.size(), density, repeat, pTime);
             }
 
-            const double kAverage = average(kruskalTimes);
-            const double pAverage = average(primTimes);
+            const double kMedian = medianOfFive(kruskalTimes);
+            const double pMedian = medianOfFive(primTimes);
+            const char* faster = pMedian < kMedian ? "prim" : kMedian < pMedian ? "kruskal" : "tie";
             std::fprintf(summary, "%llu,%d,%zu,%.4f,%d,%.6f,%.6f,%s\n",
                          static_cast<unsigned long long>(seed), n,
                          graph.edges.size(),
                          static_cast<double>(graph.edges.size()) / n,
-                         repetitions, kAverage, pAverage,
-                         pAverage < kAverage ? "prim" : "kruskal");
+                         repetitions, kMedian, pMedian, faster);
 
             const MSTResult primResult = prim(graph);
             std::fprintf(heap, "%llu,%d,%zu,%.4f,%lld,%lld,%lld,%lld\n",
@@ -120,18 +122,25 @@ int main() {
         std::vector<double> withCompression;
         std::vector<double> withoutCompression;
         for (int repeat = 0; repeat < repetitions; ++repeat) {
-            withCompression.push_back(timeKruskal(graph, true));
-            withoutCompression.push_back(timeKruskal(graph, false));
+            const double withTime = timeKruskal(graph, true);
+            const double withoutTime = timeKruskal(graph, false);
+            withCompression.push_back(withTime);
+            withoutCompression.push_back(withoutTime);
+            std::fprintf(unionFindRaw, "%llu,%d,%zu,%d,on,%.6f\n",
+                         static_cast<unsigned long long>(seed), n, graph.edges.size(), repeat, withTime);
+            std::fprintf(unionFindRaw, "%llu,%d,%zu,%d,off,%.6f\n",
+                         static_cast<unsigned long long>(seed), n, graph.edges.size(), repeat, withoutTime);
         }
         std::fprintf(unionFind, "%llu,%d,%zu,%d,%.6f,%.6f\n",
                      static_cast<unsigned long long>(seed), n,
                      graph.edges.size(), repetitions,
-                     average(withCompression), average(withoutCompression));
+                     medianOfFive(withCompression), medianOfFive(withoutCompression));
     }
 
     std::fclose(raw);
     std::fclose(summary);
     std::fclose(unionFind);
+    std::fclose(unionFindRaw);
     std::fclose(heap);
     std::cout << "Benchmark complete: " << resultSink << '\n';
     return 0;

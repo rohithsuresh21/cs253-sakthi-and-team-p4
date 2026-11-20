@@ -179,7 +179,7 @@ Other suites:
 
 ## 5. Performance evaluation
 
-All timings are the **median of 5 runs**, in milliseconds, on one machine (see Section 5.5). Graphs are random connected graphs. Raw data: [`results/timings_raw.csv`](results/timings_raw.csv), summary: [`results/timings_summary.csv`](results/timings_summary.csv).
+The runtime and path-compression results report the **median of five timed runs**, in milliseconds. Graphs are random connected graphs. Raw data: [`results/timings_raw.csv`](results/timings_raw.csv), summary: [`results/timings_summary.csv`](results/timings_summary.csv).
 
 ### 5.1 Runtime versus density
 
@@ -187,19 +187,19 @@ All timings are the **median of 5 runs**, in milliseconds, on one machine (see S
 
 | n | cables (m) | cables / building | Kruskal (ms) | Prim (ms) | Winner |
 |---:|---:|---:|---:|---:|---|
-| 200 | 600 | 3 | 0.057 | 0.123 | Kruskal 2.1x |
-| 200 | 19,900 | 99.5 | 2.553 | 2.309 | Prim 1.1x |
-| 500 | 1,500 | 3 | 0.166 | 0.357 | Kruskal 2.2x |
-| 500 | 124,750 | 249.5 | 24.057 | 14.648 | Prim 1.6x |
-| 1,000 | 3,000 | 3 | 0.352 | 0.819 | Kruskal 2.3x |
-| 1,000 | 50,000 | 50 | 7.276 | 6.697 | Prim 1.1x |
-| 1,000 | 499,500 | 499.5 | 121.151 | 52.835 | Prim 2.3x |
-| 2,000 | 6,000 | 3 | 0.780 | 1.873 | Kruskal 2.4x |
-| 2,000 | 50,000 | 25 | 7.841 | 7.824 | tie |
-| 2,000 | 100,000 | 50 | 16.265 | 13.600 | Prim 1.2x |
-| 2,000 | 1,999,000 | 999.5 | 847.389 | 244.610 | **Prim 3.5x** |
+| 200 | 600 | 3.0000 | 0.062 | 0.196 | Kruskal 3.17x |
+| 200 | 19,900 | 99.5000 | 2.684 | 3.924 | Kruskal 1.46x |
+| 500 | 1,500 | 3.0000 | 0.288 | 1.024 | Kruskal 3.56x |
+| 500 | 124,750 | 249.5000 | 17.462 | 20.407 | Kruskal 1.17x |
+| 1,000 | 3,000 | 3.0000 | 0.217 | 0.795 | Kruskal 3.67x |
+| 1,000 | 50,000 | 50.0000 | 7.238 | 8.349 | Kruskal 1.15x |
+| 1,000 | 499,500 | 499.5000 | 225.130 | 62.950 | Prim 3.58x |
+| 2,000 | 6,000 | 3.0000 | 0.604 | 2.551 | Kruskal 4.22x |
+| 2,000 | 50,000 | 25.0000 | 9.523 | 16.818 | Kruskal 1.77x |
+| 2,000 | 100,000 | 50.0000 | 14.548 | 16.793 | Kruskal 1.15x |
+| 2,000 | 1,999,000 | 999.5000 | 1714.276 | 350.875 | Prim 4.89x |
 
-The full 24-row table is in `results/timings_summary.csv`. **Kruskal wins 17 of the 24 settings (all the sparse ones); Prim wins the other 7 (all the dense ones).**
+The full 24-row table is in `results/timings_summary.csv`. **Kruskal wins 22 of 24 settings, Prim wins 2, and 0 tie.**
 
 ### 5.2 Where Kruskal and Prim cross over
 
@@ -228,9 +228,9 @@ Heap behaviour of Prim ([`results/prim_heap.csv`](results/prim_heap.csv)):
 | n | m | Max heap size | Pushes | Pops | Stale pops |
 |---:|---:|---:|---:|---:|---:|
 | 1,000 | 3,000 | 1,980 | 3,000 | 2,919 | 1,920 |
-| 1,000 | 499,500 | 497,467 | 499,500 | 3,136 | 2,137 |
+| 1,000 | 499,500 | 497,467 | 499,500 | 3,135 | 2,136 |
 | 2,000 | 6,000 | 3,918 | 6,000 | 5,979 | 3,980 |
-| 2,000 | 1,999,000 | 1,994,307 | 1,999,000 | 8,053 | 6,054 |
+| 2,000 | 1,999,000 | 1,994,306 | 1,999,000 | 8,053 | 6,054 |
 
 * The heap grows to almost `m` entries (about **99.8%** at the densest setting), so **Prim's memory is O(m)** with lazy deletion.
 * On the densest graph, Prim pushes 1,999,000 entries but pops only 8,053, so the algorithm stops almost immediately once the tree is complete. Roughly **75%** of those pops are stale and thrown away.
@@ -242,14 +242,14 @@ Heap behaviour of Prim ([`results/prim_heap.csv`](results/prim_heap.csv)):
 
 | n | m | With compression (ms) | Without (ms) | Gain |
 |---:|---:|---:|---:|---:|
-| 2,000 | 20,000 | 2.548 | 2.580 | 1.2% |
-| 20,000 | 60,000 | 9.666 | 10.262 | 5.8% |
-| 20,000 | 200,000 | 38.449 | 40.881 | 6.0% |
-| 50,000 | 250,000 | 57.261 | 62.258 | 8.0% |
+| 2,000 | 20,000 | 0.956 | 0.972 | 1.6% |
+| 20,000 | 60,000 | 3.346 | 3.760 | 11.0% |
+| 20,000 | 200,000 | 13.196 | 14.419 | 8.5% |
+| 50,000 | 250,000 | 17.493 | 21.908 | 20.2% |
 
-The benefit is small but grows with `n`. Union by rank already keeps trees very short, so compression adds only a modest extra. Heapsort dominates Kruskal's time, which is why even a perfect union-find could not close the gap with Prim on dense graphs.
+The comparison measures the full Kruskal call, with union by rank enabled in both modes. Each median comes from five trials in [the path-compression raw log](results/union_find_raw.csv). These trials were rerun locally with GCC 13.1.0 and `-O2 -std=c++17`.
 
-### 5.5 Test machine
+### 5.5 Original test machine
 
 | Item | Value |
 |---|---|
@@ -263,7 +263,7 @@ The benefit is small but grows with `n`. Union by rank already keeps trees very 
 ## 6. Conclusions
 
 1. **Both algorithms are correct.** 1,207 random cases, 0 failures, and 1,050 answers independently certified as true MSTs. Totals and spacings always agreed.
-2. **Choose by density.** Kruskal is up to **2.4x faster** on sparse graphs (about 3 cables per building). Prim is up to **3.5x faster** on dense graphs (n = 2,000, complete graph: 847 ms against 245 ms).
+2. **Choose by density.** At 2,000 buildings, Kruskal 4.22x on the graph with 6,000 cables, and Prim 4.89x on the complete graph. These ratios use the recorded medians.
 3. **The crossover is around 25 to 50 cables per building**, or about 5% to 40% density depending on `n`, moving to sparser graphs as `n` grows.
 4. **Trade-off**: Prim's lazy heap needs O(m) memory; Kruskal needs O(m) for the sorted copy as well, but has the more predictable running time.
 5. **A real campus is sparse** (a building connects to a handful of neighbours), so Kruskal is the better practical choice for this application.
@@ -271,7 +271,7 @@ The benefit is small but grows with `n`. Union by rank already keeps trees very 
 ### Known limitations
 
 * The certificate check is skipped on the 7 largest cases because it would take too long.
-* Timings come from one machine and will differ elsewhere, although the crossover shape should hold.
+* Runtime medians use the archived trials. The path-compression trials were rerun locally. Timings vary by machine and workload.
 * Costs are stored as `long long`, so totals up to about 9 x 10^18 are safe.
 
 ---
@@ -283,7 +283,7 @@ Requirements: C++17 compiler (g++), Python 3 with matplotlib for the charts, Win
 ```powershell
 .\build.ps1                                   # compile everything
 .\test.ps1                                    # all tests
-.\bench.ps1                                   # timings + figures
+.\bench\bench.ps1                             # timings + figures
 
 Get-Content tests\sample1.in | .\run --structure A
 Get-Content tests\sample1.in | .\run --structure B
