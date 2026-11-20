@@ -6,7 +6,7 @@
 #include "../src/common/zones.h"
 #include "../src/structA/kruskal.h"
 #include "../src/structB/prim.h"
-#include "generator.h"
+#include "generator.cpp"
 
 int main(int argc, char** argv) {
     char structure = 'A';
