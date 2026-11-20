@@ -40,5 +40,19 @@ plt.title("Union-find: path compression on and off")
 plt.legend()
 plt.savefig("results/figures/union_find_comparison.png", dpi=150, bbox_inches="tight")
 plt.close()
+heap = read("results/prim_heap.csv")
+plt.figure(figsize=(8, 5))
+for n in sorted(set(int(r["n"]) for r in heap)):
+    rows = [r for r in heap if int(r["n"]) == n]
+    plt.plot([float(r["m"]) for r in rows], [float(r["max_heap_size"]) for r in rows], marker="o", label="n=" + str(n))
+plt.xscale("log")
+plt.yscale("log")
+plt.xlabel("number of edges m")
+plt.ylabel("largest heap size (entries)")
+plt.title("Prim lazy deletion: peak heap size")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.savefig("results/figures/prim_heap_size.png", dpi=150, bbox_inches="tight")
+plt.close()
 
 
