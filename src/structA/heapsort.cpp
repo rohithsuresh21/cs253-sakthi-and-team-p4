@@ -1,7 +1,7 @@
 #pragma once
 #include <utility>
 #include <vector>
-#include "../common/graph.h"
+#include "../common/graph.cpp"
 
 
 inline void siftDown(std::vector<Edge>& a, int i, int size) {
@@ -9,6 +9,7 @@ inline void siftDown(std::vector<Edge>& a, int i, int size) {
         int left = 2 * i + 1;
         int right = 2 * i + 2;
         int biggest = i;
+
 
         if (left < size && a[left].w > a[biggest].w) biggest = left;
         if (right < size && a[right].w > a[biggest].w) biggest = right;
