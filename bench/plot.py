@@ -1,75 +1,81 @@
 import csv
 import os
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-os.makedirs("results/figures", exist_ok=True)
+
+os.makedirs("results", exist_ok=True)
 
 
-def read(path):
-    with open(path) as f:
-        return list(csv.DictReader(f))
-      summary = read("results/timings_summary.csv")
-sizes = sorted(set(int(r["n"]) for r in summary))
-plt.figure(figsize=(8, 5))
-for n in sizes:
-    rows = [r for r in summary if int(r["n"]) == n]
-    x = [float(r["edges_per_vertex"]) for r in rows]
-    plt.plot(x, [float(r["kruskal_median_ms"]) for r in rows], marker="o", label="Kruskal n=" + str(n))
-    plt.plot(x, [float(r["prim_median_ms"]) for r in rows], marker="s", linestyle="--", label="Prim n=" + str(n))
+def read_csv(path):
+    with open(path, newline="", encoding="utf-8") as stream:
+        return list(csv.DictReader(stream))
+
+
+summary = read_csv("results/timings_summary.csv")
+for n in sorted({int(row["n"]) for row in summary}):
+    rows = sorted(
+        (row for row in summary if int(row["n"]) == n),
+        key=lambda row: float(row["edges_per_vertex"]),
+    )
+    x = [float(row["edges_per_vertex"]) for row in rows]
+    plt.plot(x, [float(row["kruskal_avg_ms"]) for row in rows], marker="o", label=f"Kruskal n={n}")
+    plt.plot(x, [float(row["prim_avg_ms"]) for row in rows], marker="s", linestyle="--", label=f"Prim n={n}")
 plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("edges per vertex (m / n)")
-plt.ylabel("median running time (ms)")
-plt.title("Running time vs density")
+plt.xlabel("edges per vertex")
+plt.ylabel("average time (ms)")
+plt.title("Average runtime by graph density")
 plt.legend(fontsize=7)
 plt.grid(True, alpha=0.3)
-plt.savefig("results/figures/runtime_vs_density.png", dpi=150, bbox_inches="tight")
+plt.savefig("results/runtime_vs_density.png", dpi=120, bbox_inches="tight")
 plt.close()
-uf = read("results/union_find.csv")
-labels = [r["n"] + "\nm=" + r["m"] for r in uf]
-x = range(len(uf))
-plt.figure(figsize=(8, 5))
-plt.bar([i - 0.2 for i in x], [float(r["with_compression_median_ms"]) for r in uf], width=0.4, label="with path compression")
-plt.bar([i + 0.2 for i in x], [float(r["without_compression_median_ms"]) for r in uf], width=0.4, label="without path compression")
-plt.xticks(list(x), labels)
+
+union_find = read_csv("results/union_find.csv")
+labels = [f"{row['n']}\nm={row['m']}" for row in union_find]
+positions = list(range(len(union_find)))
+plt.bar([i - 0.2 for i in positions], [float(row["with_compression_avg_ms"]) for row in union_find], width=0.4, label="with compression")
+plt.bar([i + 0.2 for i in positions], [float(row["without_compression_avg_ms"]) for row in union_find], width=0.4, label="without compression")
+plt.xticks(positions, labels)
 plt.xlabel("graph (n, m)")
-plt.ylabel("median Kruskal time (ms)")
-plt.title("Union-find: path compression on and off")
+plt.ylabel("average Kruskal time (ms)")
+plt.title("Union-find path compression")
 plt.legend()
-plt.savefig("results/figures/union_find_comparison.png", dpi=150, bbox_inches="tight")
+plt.grid(True, axis="y", alpha=0.3)
+plt.savefig("results/union_find_comparison.png", dpi=120, bbox_inches="tight")
 plt.close()
-heap = read("results/prim_heap.csv")
-plt.figure(figsize=(8, 5))
-for n in sorted(set(int(r["n"]) for r in heap)):
-    rows = [r for r in heap if int(r["n"]) == n]
-    plt.plot([float(r["m"]) for r in rows], [float(r["max_heap_size"]) for r in rows], marker="o", label="n=" + str(n))
+
+heap = read_csv("results/prim_heap.csv")
+for n in sorted({int(row["n"]) for row in heap}):
+    rows = sorted((row for row in heap if int(row["n"]) == n), key=lambda row: int(row["m"]))
+    plt.plot([int(row["m"]) for row in rows], [int(row["max_heap_size"]) for row in rows], marker="o", label=f"n={n}")
 plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("number of edges m")
-plt.ylabel("largest heap size (entries)")
-plt.title("Prim lazy deletion: peak heap size")
+plt.xlabel("number of edges")
+plt.ylabel("maximum heap size")
+plt.title("Prim lazy deletion heap size")
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.savefig("results/figures/prim_heap_size.png", dpi=150, bbox_inches="tight")
+plt.savefig("results/prim_heap_size.png", dpi=120, bbox_inches="tight")
 plt.close()
-if os.path.exists("results/crossover.csv"):
-    cross = read("results/crossover.csv")
-    plt.figure(figsize=(8, 5))
-    for n in sorted(set(int(r["n"]) for r in cross)):
-        rows = [r for r in cross if int(r["n"]) == n]
-        plt.plot([float(r["density_percent"]) for r in rows], [float(r["margin_percent"]) for r in rows], marker="o", label="n=" + str(n))
+
+crossover_path = "results/crossover.csv"
+if os.path.exists(crossover_path):
+    crossover = [row for row in read_csv(crossover_path) if row["family"] == "random"]
+    for n in sorted({int(row["n"]) for row in crossover}):
+        rows = sorted((row for row in crossover if int(row["n"]) == n), key=lambda row: float(row["density"]))
+        x = [100 * float(row["density"]) for row in rows]
+        y = [100 * (float(row["kruskal_ms"]) - float(row["prim_ms"])) / max(float(row["kruskal_ms"]), 1e-12) for row in rows]
+        plt.plot(x, y, marker="o", label=f"n={n}")
     plt.axhline(0, color="black", linewidth=0.8)
-    plt.xlabel("density (% of all possible edges)")
-    plt.ylabel("Prim faster than Kruskal by (%)")
-    plt.title("Crossover: above 0 means Prim is faster")
+    plt.xlabel("density (% of possible edges)")
+    plt.ylabel("Prim faster by (%)")
+    plt.title("Prim/Kruskal crossover")
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig("results/figures/crossover.png", dpi=150, bbox_inches="tight")
+    plt.savefig("results/crossover.png", dpi=120, bbox_inches="tight")
     plt.close()
 
-print("figures saved in results/figures")
-
-
-
+print("Figures saved in results")

@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
                     "Unverified benchmark record"
                 );
 
-            // Analyze density sweeps separately.
+            
             if (fields[0] != "random")
                 continue;
 

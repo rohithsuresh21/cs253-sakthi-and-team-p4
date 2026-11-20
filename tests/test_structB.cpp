@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <random>
 #include <vector>
-#include "../src/common/zones.cpp"
+#include "../src/common/zones.h"
 #include "../src/structB/prim.h"
 
 int passed = 0;

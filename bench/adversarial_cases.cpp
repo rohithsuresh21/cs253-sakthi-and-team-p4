@@ -56,8 +56,8 @@ struct Builder {
         return true;
     }
 
-    // Add exactly 'extra' new edges from the
-    // specified vertex subset.
+    
+    
     void addExtra(
         const std::vector<int>& vertices,
         long long extra
@@ -82,7 +82,7 @@ struct Builder {
                 "Requested edge count exceeds capacity"
             );
 
-        // Dense cases: enumerate missing edges.
+        
         if (available <= 2000000 &&
             extra * 3 >= available) {
 
@@ -129,7 +129,7 @@ struct Builder {
         }
 
         if (added < extra) {
-            // Deterministic fallback.
+            
             for (size_t i = 0;
                  i < vertices.size() && added < extra;
                  ++i) {
@@ -151,7 +151,7 @@ struct Builder {
     }
 };
 
-} // namespace
+} 
 
 Graph generateGraph(
     GraphType type,
@@ -214,7 +214,7 @@ Graph generateGraph(
                     "Connected graph requires n-1 edges"
                 );
 
-            // Random spanning tree.
+            
             for (int v = 2; v <= n; ++v) {
                 int u = std::uniform_int_distribution<int>(
                     1, v - 1
@@ -256,14 +256,14 @@ Graph generateGraph(
                     "Too many edges for one-bridge graph"
                 );
 
-            // Connect vertices inside each cluster.
+            
             for (int v = 2; v <= mid; ++v)
                 b.add(v - 1, v);
 
             for (int v = mid + 2; v <= n; ++v)
                 b.add(v - 1, v);
 
-            // The only cross-cluster edge.
+            
             b.add(mid, mid + 1);
 
             long long extra = m - (n - 1);
@@ -292,7 +292,7 @@ Graph generateGraph(
         }
 
         case GraphType::Disconnected: {
-            // Vertex n remains isolated.
+            
             if (m > capacity(n - 1))
                 throw std::invalid_argument(
                     "Too many edges for disconnected graph"
@@ -431,4 +431,4 @@ std::string graphTypeName(GraphType type) {
     return "unknown";
 }
 
-} // namespace mstbench
+} 

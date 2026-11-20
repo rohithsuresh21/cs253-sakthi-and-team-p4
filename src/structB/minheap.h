@@ -1,51 +1,54 @@
 #pragma once
+
+#include <cstddef>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
 struct HeapItem {
-    long long w;
-    int from;
-    int to;
+    long long w = 0;
+    int from = 0;
+    int to = 0;
 };
 
 struct MinHeap {
     std::vector<HeapItem> data;
+    bool empty() const { return data.empty(); }
+    std::size_t size() const { return data.size(); }
 
-    bool empty() const {
-        return data.empty();
+    static bool less(const HeapItem& a, const HeapItem& b) {
+        if (a.w != b.w) return a.w < b.w;
+        if (a.from != b.from) return a.from < b.from;
+        return a.to < b.to;
     }
 
-    long long size() const {
-        return (long long)data.size();
-    }
-
-    void push(HeapItem item) {
+    void push(const HeapItem& item) {
         data.push_back(item);
-        int i = (int)data.size() - 1;
+        std::size_t i = data.size() - 1;
         while (i > 0) {
-            int parent = (i - 1) / 2;
-            if (data[parent].w <= data[i].w) break;
-            std::swap(data[parent], data[i]);
+            const std::size_t parent = (i - 1) / 2;
+            if (!less(data[i], data[parent])) break;
+            std::swap(data[i], data[parent]);
             i = parent;
         }
     }
 
     HeapItem pop() {
-        HeapItem top = data[0];
-        data[0] = data.back();
+        if (data.empty()) throw std::logic_error("pop from empty MinHeap");
+        const HeapItem result = data.front();
+        data.front() = data.back();
         data.pop_back();
-        int size = (int)data.size();
-        int i = 0;
+        std::size_t i = 0;
         while (true) {
-            int left = 2 * i + 1;
-            int right = 2 * i + 2;
-            int smallest = i;
-            if (left < size && data[left].w < data[smallest].w) smallest = left;
-            if (right < size && data[right].w < data[smallest].w) smallest = right;
+            const std::size_t left = 2 * i + 1;
+            const std::size_t right = left + 1;
+            std::size_t smallest = i;
+            if (left < data.size() && less(data[left], data[smallest])) smallest = left;
+            if (right < data.size() && less(data[right], data[smallest])) smallest = right;
             if (smallest == i) break;
             std::swap(data[i], data[smallest]);
             i = smallest;
         }
-        return top;
+        return result;
     }
 };

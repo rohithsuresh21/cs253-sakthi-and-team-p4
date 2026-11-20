@@ -1,28 +1,32 @@
 #pragma once
+
+#include <cstddef>
 #include <utility>
 #include <vector>
+
 #include "../common/graph.h"
 
-inline void siftDown(std::vector<Edge>& a, int i, int size) {
+inline void siftDown(std::vector<Edge>& edges, std::size_t root, std::size_t end) {
     while (true) {
-        int left = 2 * i + 1;
-        int right = 2 * i + 2;
-        int biggest = i;
-        if (left < size && a[left].w > a[biggest].w) biggest = left;
-        if (right < size && a[right].w > a[biggest].w) biggest = right;
-        if (biggest == i) break;
-        std::swap(a[i], a[biggest]);
-        i = biggest;
+        const std::size_t left = 2 * root + 1;
+        if (left >= end) return;
+        const std::size_t right = left + 1;
+        std::size_t largest = root;
+        if (edges[left].w > edges[largest].w) largest = left;
+        if (right < end && edges[right].w > edges[largest].w) largest = right;
+        if (largest == root) return;
+        std::swap(edges[root], edges[largest]);
+        root = largest;
     }
 }
 
-inline void heapSort(std::vector<Edge>& a) {
-    int size = (int)a.size();
-    for (int i = size / 2 - 1; i >= 0; i--) {
-        siftDown(a, i, size);
+inline void heapSort(std::vector<Edge>& edges) {
+    const std::size_t n = edges.size();
+    for (std::size_t start = n / 2; start > 0; --start) {
+        siftDown(edges, start - 1, n);
     }
-    for (int end = size - 1; end > 0; end--) {
-        std::swap(a[0], a[end]);
-        siftDown(a, 0, end);
+    for (std::size_t end = n; end > 1; --end) {
+        std::swap(edges[0], edges[end - 1]);
+        siftDown(edges, 0, end - 1);
     }
 }

@@ -50,4 +50,4 @@ void writeGraph(
 GraphType parseGraphType(const std::string& name);
 std::string graphTypeName(GraphType type);
 
-} // namespace mstbench
+} 

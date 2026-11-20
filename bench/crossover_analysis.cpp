@@ -1,440 +1,237 @@
-
 #include "adversarial_cases.hpp"
 
 #include <algorithm>
 #include <chrono>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-using namespace mstbench;
-namespace fs = std::filesystem;
+#include "../src/common/zones.h"
+#include "../src/structA/kruskal.h"
+#include "../src/structB/prim.h"
 
-struct DSU {
-    std::vector<int> parent, sz;
+struct OracleResult {
+    bool connected = false;
+    long long total = 0;
+    long long spacing = 0;
+};
 
-    explicit DSU(int n)
-        : parent(n + 1), sz(n + 1, 1) {
+long long resultSink = 0;
+
+struct DisjointSet {
+    std::vector<int> parent;
+    std::vector<int> size;
+
+    explicit DisjointSet(int n)
+        : parent(static_cast<std::size_t>(n + 1)),
+          size(static_cast<std::size_t>(n + 1), 1) {
         std::iota(parent.begin(), parent.end(), 0);
     }
 
     int find(int x) {
-        if (parent[x] != x)
-            parent[x] = find(parent[x]);
+        if (parent[x] != x) parent[x] = find(parent[x]);
         return parent[x];
     }
 
-    bool unite(int u, int v) {
-        u = find(u);
-        v = find(v);
-
-        if (u == v) return false;
-
-        if (sz[u] < sz[v])
-            std::swap(u, v);
-
-        parent[v] = u;
-        sz[u] += sz[v];
+    bool join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return false;
+        if (size[a] < size[b]) std::swap(a, b);
+        parent[b] = a;
+        size[a] += size[b];
         return true;
     }
 };
 
-struct Answer {
-    bool connected = false;
-    long long mst = 0;
-    long long spacing = 0;
-};
+OracleResult referenceAnswer(const mstbench::Graph& graph) {
+    std::vector<mstbench::Edge> edges = graph.edges;
+    std::sort(edges.begin(), edges.end(), [](const auto& a, const auto& b) {
+        if (a.w != b.w) return a.w < b.w;
+        if (a.u != b.u) return a.u < b.u;
+        return a.v < b.v;
+    });
 
-Answer referenceAnswer(const Graph& graph) {
-    std::vector<Edge> edges = graph.edges;
-
-    std::sort(
-        edges.begin(), edges.end(),
-        [](const Edge& a, const Edge& b) {
-            if (a.w != b.w) return a.w < b.w;
-            if (a.u != b.u) return a.u < b.u;
-            return a.v < b.v;
-        }
-    );
-
-    DSU mstDSU(graph.n);
-    long long mstCost = 0;
+    DisjointSet mstSets(graph.n);
     int accepted = 0;
-
-    for (const Edge& e : edges) {
-        if (mstDSU.unite(e.u, e.v)) {
-            mstCost += e.w;
-            ++accepted;
-
-            if (accepted == graph.n - 1)
-                break;
+    long long total = 0;
+    for (const auto& edge : edges) {
+        if (mstSets.join(edge.u, edge.v)) {
+            total += edge.w;
+            if (++accepted == graph.n - 1) break;
         }
     }
+    if (accepted != graph.n - 1) return {};
 
-    if (accepted != graph.n - 1)
-        return {false, 0, 0};
-
-    // The project must define k=1 spacing separately.
-    // This benchmark uses k=2 throughout.
-    if (graph.k < 2)
-        throw std::invalid_argument(
-            "Benchmark requires k >= 2"
-        );
-
-    DSU clusterDSU(graph.n);
+    DisjointSet zones(graph.n);
     int components = graph.n;
-    long long spacing = 0;
-    bool found = false;
-
-    for (const Edge& e : edges) {
-        if (clusterDSU.find(e.u) ==
-            clusterDSU.find(e.v))
-            continue;
-
-        if (components == graph.k) {
-            spacing = e.w;
-            found = true;
-            break;
-        }
-
-        clusterDSU.unite(e.u, e.v);
+    for (const auto& edge : edges) {
+        if (zones.find(edge.u) == zones.find(edge.v)) continue;
+        if (components == graph.k) return {true, total, edge.w};
+        zones.join(edge.u, edge.v);
         --components;
     }
-
-    if (!found)
-        throw std::runtime_error(
-            "Unable to determine k-spacing"
-        );
-
-    return {true, mstCost, spacing};
+    throw std::runtime_error("Could not calculate zone spacing");
 }
 
-std::string readFile(const fs::path& path) {
-    std::ifstream in(path);
-
-    if (!in)
-        throw std::runtime_error("Cannot read output");
-
-    return std::string(
-        std::istreambuf_iterator<char>(in),
-        std::istreambuf_iterator<char>()
-    );
-}
-
-Answer parseAnswer(const std::string& output) {
-    std::istringstream in(output);
-    std::string first;
-
-    if (!(in >> first))
-        throw std::runtime_error("Empty output");
-
-    if (first == "DISCONNECTED") {
-        std::string extra;
-
-        if (in >> extra)
-            throw std::runtime_error(
-                "Unexpected disconnected output"
-            );
-
-        return {false, 0, 0};
+Graph convertGraph(const mstbench::Graph& source) {
+    Graph graph;
+    graph.n = source.n;
+    graph.k = source.k;
+    graph.edges.reserve(source.edges.size());
+    for (const auto& edge : source.edges) {
+        graph.edges.push_back({edge.u - 1, edge.v - 1, edge.w});
     }
-
-    long long mst = 0;
-
-    try {
-        size_t consumed = 0;
-        mst = std::stoll(first, &consumed);
-
-        if (consumed != first.size())
-            throw std::invalid_argument("Invalid integer");
-    } catch (...) {
-        throw std::runtime_error("Invalid MST cost");
-    }
-
-    long long spacing;
-    std::string extra;
-
-    if (!(in >> spacing) || (in >> extra))
-        throw std::runtime_error(
-            "Expected exactly two numeric outputs"
-        );
-
-    return {true, mst, spacing};
+    return graph;
 }
 
-void verify(
-    const Answer& actual,
-    const Answer& expected
-) {
-    if (actual.connected != expected.connected)
-        throw std::runtime_error(
-            "Connectivity result mismatch"
-        );
-
-    if (actual.connected &&
-        (actual.mst != expected.mst ||
-         actual.spacing != expected.spacing)) {
-        throw std::runtime_error(
-            "MST cost or spacing mismatch"
-        );
+void verify(const MSTResult& result, const OracleResult& expected,
+            int n, int k) {
+    if (result.connected != expected.connected) {
+        throw std::runtime_error("Connectivity result mismatch");
+    }
+    if (result.connected &&
+        (result.total != expected.total ||
+         zoneSpacing(result, n, k) != expected.spacing)) {
+        throw std::runtime_error("MST result mismatch");
     }
 }
 
-std::string quoted(const std::string& path) {
-    return "\"" + path + "\"";
+double average(const std::vector<double>& values) {
+    double sum = 0.0;
+    for (double value : values) sum += value;
+    return values.empty() ? 0.0 : sum / values.size();
 }
 
-double runProgram(
-    const std::string& executable,
-    const fs::path& input,
-    const fs::path& output
-) {
-    std::string command =
-        quoted(executable) +
-        " < " + quoted(input.string()) +
-        " > " + quoted(output.string());
-
-    auto begin = std::chrono::steady_clock::now();
-
-    int status = std::system(command.c_str());
-
-    auto end = std::chrono::steady_clock::now();
-
-    if (status != 0)
-        throw std::runtime_error(
-            "Algorithm executable failed"
-        );
-
-    return std::chrono::duration<double, std::milli>(
-        end - begin
-    ).count();
+template <typename Function>
+double measure(Function function) {
+    const auto start = std::chrono::steady_clock::now();
+    const MSTResult result = function();
+    const auto stop = std::chrono::steady_clock::now();
+    resultSink += result.total;
+    return std::chrono::duration<double, std::milli>(stop - start).count();
 }
 
-double median(std::vector<double> values) {
-    std::sort(values.begin(), values.end());
+void benchmark(const mstbench::Graph& source, const std::string& family,
+               int repetitions, std::uint64_t seed, std::ofstream& csv) {
+    if (!mstbench::validateGraph(source)) {
+        throw std::runtime_error("Invalid generated graph");
+    }
 
-    size_t n = values.size();
-
-    if (n % 2 == 1)
-        return values[n / 2];
-
-    return (values[n / 2 - 1] + values[n / 2]) / 2;
-}
-
-void benchmark(
-    const Graph& graph,
-    const std::string& family,
-    const std::string& prim,
-    const std::string& kruskal,
-    int repetitions,
-    std::uint64_t seed,
-    std::ofstream& csv
-) {
-    if (!validateGraph(graph))
-        throw std::runtime_error("Invalid benchmark graph");
-
-    fs::path input = "crossover_input.tmp";
-    fs::path output = "crossover_output.tmp";
-
-    writeGraph(graph, input.string());
-
-    Answer expected = referenceAnswer(graph);
-
+    const Graph graph = convertGraph(source);
+    const OracleResult expected = referenceAnswer(source);
     std::vector<double> primTimes;
     std::vector<double> kruskalTimes;
+    primTimes.reserve(static_cast<std::size_t>(repetitions));
+    kruskalTimes.reserve(static_cast<std::size_t>(repetitions));
 
-    for (int i = 0; i < repetitions; ++i) {
-        bool primFirst = (i % 2 == 0);
+    for (int repeat = 0; repeat < repetitions; ++repeat) {
+        MSTResult primResult;
+        MSTResult kruskalResult;
+        double primMs = 0.0;
+        double kruskalMs = 0.0;
 
-        for (int j = 0; j < 2; ++j) {
-            bool usePrim = (j == 0) == primFirst;
-
-            const std::string& executable =
-                usePrim ? prim : kruskal;
-
-            double elapsed = runProgram(
-                executable, input, output
-            );
-
-            Answer actual = parseAnswer(
-                readFile(output)
-            );
-
-            verify(actual, expected);
-
-            if (usePrim)
-                primTimes.push_back(elapsed);
-            else
-                kruskalTimes.push_back(elapsed);
+        if (repeat % 2 == 0) {
+            primMs = measure([&] { primResult = prim(graph); return primResult; });
+            kruskalMs = measure([&] { kruskalResult = kruskal(graph); return kruskalResult; });
+        } else {
+            kruskalMs = measure([&] { kruskalResult = kruskal(graph); return kruskalResult; });
+            primMs = measure([&] { primResult = prim(graph); return primResult; });
         }
+
+        verify(primResult, expected, graph.n, graph.k);
+        verify(kruskalResult, expected, graph.n, graph.k);
+        primTimes.push_back(primMs);
+        kruskalTimes.push_back(kruskalMs);
     }
 
-    double primMs = median(primTimes);
-    double kruskalMs = median(kruskalTimes);
-    double ratio = primMs / kruskalMs;
+    const double primAverage = average(primTimes);
+    const double kruskalAverage = average(kruskalTimes);
+    const double ratio = primAverage / std::max(kruskalAverage, 1e-12);
+    const long long m = static_cast<long long>(source.edges.size());
+    const double density = 2.0 * m / (1.0 * source.n * (source.n - 1));
 
-    long long m = graph.edges.size();
-
-    double density =
-        2.0 * m / (1.0 * graph.n * (graph.n - 1));
-
-    csv << family << ','
-        << graph.n << ','
-        << m << ','
-        << std::setprecision(12) << density << ','
-        << seed << ','
-        << repetitions << ','
-        << primMs << ','
-        << kruskalMs << ','
+    csv << family << ',' << source.n << ',' << m << ','
+        << std::setprecision(12) << density << ',' << seed << ','
+        << repetitions << ',' << primAverage << ',' << kruskalAverage << ','
         << ratio << ','
-        << (expected.connected
-            ? std::to_string(expected.mst)
-            : "DISCONNECTED")
+        << (expected.connected ? std::to_string(expected.total) : "DISCONNECTED")
         << ",PASS\n";
-
     csv.flush();
 
-    std::cout
-        << family
-        << " V=" << graph.n
-        << " E=" << m
-        << " Prim=" << primMs << " ms"
-        << " Kruskal=" << kruskalMs << " ms"
-        << " Ratio=" << ratio << '\n';
-
-    std::error_code ec;
-    fs::remove(input, ec);
-    fs::remove(output, ec);
+    std::cout << family << " V=" << source.n << " E=" << m
+              << " Prim=" << primAverage << " ms"
+              << " Kruskal=" << kruskalAverage << " ms"
+              << " Ratio=" << ratio << '\n';
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 3 || argc > 5) {
-        std::cerr
-            << "Usage: crossover_analysis "
-            << "<prim_executable> <kruskal_executable> "
-            << "[repetitions] [output_csv]\n";
+    if (argc < 1 || argc > 3) {
+        std::cerr << "Usage: crossover_analysis [repetitions] [output_csv]\n";
         return 1;
     }
 
     try {
-        std::string prim =
-            fs::absolute(argv[1]).string();
+        const int repetitions = argc >= 2 ? std::stoi(argv[1]) : 5;
+        if (repetitions < 1) throw std::invalid_argument("Invalid repetition count");
 
-        std::string kruskal =
-            fs::absolute(argv[2]).string();
-
-        int repetitions =
-            argc >= 4 ? std::stoi(argv[3]) : 7;
-
-        if (repetitions < 1)
-            throw std::invalid_argument(
-                "Invalid repetition count"
-            );
-
-        fs::path csvPath =
-            argc >= 5
-            ? fs::path(argv[4])
-            : fs::path("results/crossover/results.csv");
-
-        if (!csvPath.parent_path().empty())
-            fs::create_directories(csvPath.parent_path());
+        const std::filesystem::path csvPath = argc >= 3
+            ? std::filesystem::path(argv[2])
+            : std::filesystem::path("results/crossover.csv");
+        if (!csvPath.parent_path().empty()) {
+            std::filesystem::create_directories(csvPath.parent_path());
+        }
 
         std::ofstream csv(csvPath);
-
-        if (!csv)
-            throw std::runtime_error("Cannot open CSV");
-
-        csv << "family,n,m,density,seed,repetitions,"
-               "prim_ms,kruskal_ms,ratio,mst_cost,status\n";
+        if (!csv) throw std::runtime_error("Cannot open crossover CSV");
+        csv << "family,n,m,density,seed,repetitions,prim_ms,kruskal_ms,ratio,mst_cost,status\n";
 
         constexpr std::uint64_t seed = 42;
-
-        // Fixed vertex counts, increasing edge density.
         for (int n : {500, 1000, 2000, 5000}) {
-            long long maximum =
-                1LL * n * (n - 1) / 2;
-
+            const long long maximum = 1LL * n * (n - 1) / 2;
             for (int factor : {3, 5, 10, 25, 50}) {
-                long long m = std::min(
-                    maximum, 1LL * factor * n
+                const long long m = std::min(maximum, 1LL * factor * n);
+                const auto graph = mstbench::generateGraph(
+                    mstbench::GraphType::Random, n, m, 2, seed
                 );
-
-                Graph graph = generateGraph(
-                    GraphType::Random,
-                    n, m, 2, seed
-                );
-
-                benchmark(
-                    graph, "random",
-                    prim, kruskal,
-                    repetitions, seed, csv
-                );
+                benchmark(graph, "random", repetitions, seed, csv);
             }
         }
 
-        // Structural adversarial cases.
         for (int n : {100, 500, 1000}) {
-            for (GraphType type : {
-                GraphType::Chain,
-                GraphType::Star,
-                GraphType::EqualWeight,
-                GraphType::Bridge,
-                GraphType::Disconnected
-            }) {
+            for (const auto type : {
+                     mstbench::GraphType::Chain,
+                     mstbench::GraphType::Star,
+                     mstbench::GraphType::EqualWeight,
+                     mstbench::GraphType::Bridge,
+                     mstbench::GraphType::Disconnected}) {
                 long long m = n - 1;
-
-                if (type == GraphType::EqualWeight ||
-                    type == GraphType::Bridge)
-                    m = 5LL * n;
-
-                if (type == GraphType::Disconnected)
-                    m = n - 2;
-
-                Graph graph = generateGraph(
-                    type, n, m, 2, seed
-                );
-
-                benchmark(
-                    graph, graphTypeName(type),
-                    prim, kruskal,
-                    repetitions, seed, csv
-                );
+                if (type == mstbench::GraphType::EqualWeight ||
+                    type == mstbench::GraphType::Bridge) m = 5LL * n;
+                if (type == mstbench::GraphType::Disconnected) m = n - 2;
+                const auto graph = mstbench::generateGraph(type, n, m, 2, seed);
+                benchmark(graph, mstbench::graphTypeName(type), repetitions, seed, csv);
             }
         }
 
-        // Complete graphs at manageable sizes.
         for (int n : {100, 300, 500}) {
-            long long m = 1LL * n * (n - 1) / 2;
-
-            Graph graph = generateGraph(
-                GraphType::Complete,
-                n, m, 2, seed
+            const long long m = 1LL * n * (n - 1) / 2;
+            const auto graph = mstbench::generateGraph(
+                mstbench::GraphType::Complete, n, m, 2, seed
             );
-
-            benchmark(
-                graph, "complete",
-                prim, kruskal,
-                repetitions, seed, csv
-            );
+            benchmark(graph, "complete", repetitions, seed, csv);
         }
 
-        std::cout
-            << "Results saved to "
-            << csvPath.string() << '\n';
-
-    } catch (const std::exception& e) {
-        std::cerr
-            << "Benchmark error: "
-            << e.what() << '\n';
+        std::cout << "Results saved to " << csvPath.string() << '\n';
+        std::cout << "Result check: " << resultSink << '\n';
+    } catch (const std::exception& error) {
+        std::cerr << "Benchmark error: " << error.what() << '\n';
         return 1;
     }
-
     return 0;
 }
