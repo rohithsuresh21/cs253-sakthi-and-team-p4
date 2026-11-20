@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <random>
 #include <vector>
-#include "../tests/randomgraph.cpp"
+#include "../tests/randomgraph.h"
 #include "../src/structA/kruskal.cpp"
 #include "../src/structB/prim.cpp"
 
