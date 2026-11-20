@@ -4,7 +4,7 @@
 #include "../src/common/bfs.cpp"
 #include "../src/common/zones.cpp"
 #include "../src/structA/kruskal.cpp"
-#include "../src/structB/prim.cpp"
+#include "../src/structB/prim.h"
 #include "generator.cpp"
 
 using namespace std;
