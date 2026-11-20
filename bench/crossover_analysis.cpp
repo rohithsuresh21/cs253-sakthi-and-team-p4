@@ -276,9 +276,9 @@ void benchmark(
         }
     }
 
-    double primMs = median(primTimes);
-    double kruskalMs = median(kruskalTimes);
-    double ratio = primMs / kruskalMs;
+    double primMedianMs = median(primTimes);
+    double kruskalMedianMs = median(kruskalTimes);
+    double ratio = primMedianMs / kruskalMedianMs;
 
     long long m = graph.edges.size();
 
@@ -291,8 +291,8 @@ void benchmark(
         << std::setprecision(12) << density << ','
         << seed << ','
         << repetitions << ','
-        << primMs << ','
-        << kruskalMs << ','
+        << primMedianMs << ','
+        << kruskalMedianMs << ','
         << ratio << ','
         << (expected.connected
             ? std::to_string(expected.mst)
@@ -305,8 +305,8 @@ void benchmark(
         << family
         << " V=" << graph.n
         << " E=" << m
-        << " Prim=" << primMs << " ms"
-        << " Kruskal=" << kruskalMs << " ms"
+        << " Prim median=" << primMedianMs << " ms"
+        << " Kruskal median=" << kruskalMedianMs << " ms"
         << " Ratio=" << ratio << '\n';
 
     std::error_code ec;
@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
             throw std::runtime_error("Cannot open CSV");
 
         csv << "family,n,m,density,seed,repetitions,"
-               "prim_ms,kruskal_ms,ratio,mst_cost,status\n";
+               "prim_median_ms,kruskal_median_ms,ratio,mst_cost,status\n";
 
         constexpr std::uint64_t seed = 42;
 
