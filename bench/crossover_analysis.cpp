@@ -192,10 +192,15 @@ int main(int argc, char* argv[]) {
         csv << "family,n,m,density,seed,repetitions,prim_ms,kruskal_ms,ratio,mst_cost,status\n";
 
         constexpr std::uint64_t seed = 42;
-        for (int n : {500, 1000, 2000, 5000}) {
+        for (int n : {500, 1000, 2000}) {
             const long long maximum = 1LL * n * (n - 1) / 2;
-            for (int factor : {3, 5, 10, 25, 50}) {
-                const long long m = std::min(maximum, 1LL * factor * n);
+
+            for (double density : {
+                0.01, 0.025, 0.05, 0.10,
+                0.20, 0.40, 0.70, 1.00
+            }) {
+                const long long m =
+                    std::max(1LL, static_cast<long long>(density * maximum));
                 const auto graph = mstbench::generateGraph(
                     mstbench::GraphType::Random, n, m, 2, seed
                 );
