@@ -310,11 +310,11 @@ All `.cpp` files include each other directly, so compile only the entry file (fo
 
 | Role | Name | Roll number | GitHub |
 |---|---|---|---|
-| 1. Kruskal (Structure A) | Rohith M S | | rohithsuresh21 |
-| 2. Prim (Structure B) |  | | |
-| 3. Application | | | |
-| 4. Correctness and testing | | | |
-| 5. Measurements and charts | | | |
-| 6. Hard cases and crossover | | | |
+| 1. Kruskal (Structure A) | Rohith M S | 250005038 | rohithsuresh21 |
+| 2. Prim (Structure B) | Sheik Rehan Sharief | 250003071 | Rayhann12345 |
+| 3. Application | Sakthi P | 250003067 | sakthi220107-cmyk |
+| 4. Correctness and testing | Parthasarathy S | 250002046 | Sarathy-10 |
+| 5. Measurements and charts | Bhavan Jeeth A | 250004010 | bhavan12391 |
+| 6. Hard cases and crossover | Kavin Krishnan S| 250005022 | kavin-krishnan|
 
 AI assistance (Claude) is declared per member in `tests/TOOLS.md`.
