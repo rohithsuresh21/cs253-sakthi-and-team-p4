@@ -24,7 +24,8 @@ bool certificate(const Graph& g, const MSTResult& r) {
     for (const Edge& e : g.edges) {
         if (e.u == e.v) continue;
         std::vector<char> seen(g.n, 0);
-        std::vector<long long> best(g.n, 0);
+        std::vector<long long> best(g.n, LLONG_MIN);
+        best[e.u] = LLONG_MIN;
         std::vector<int> stack;
         stack.push_back(e.u);
         seen[e.u] = 1;
