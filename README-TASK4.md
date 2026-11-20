@@ -116,7 +116,9 @@ This bound applies to the described lazy-heap implementation and its edge-insert
 ```text
 .
 ├── src/
-│   ├── common/          # Shared graph, connectivity and zone utilities
+│   |-- bfs
+|   |-- graph
+|   |-- zones            # Shared graph, connectivity and zone utilities
 │   ├── structA/         # Kruskal implementation
 │   └── structB/         # Prim implementation
 ├── tests/
@@ -128,9 +130,10 @@ This bound applies to the described lazy-heap implementation and its edge-insert
 │   └── sample2.out      # Expected sample output
 ├── results/
 │   └── correctness.csv # Generated correctness results
-├── test.ps1             # PowerShell test helper
-├── TOOLS.md             # Tools used and team contributions
-└── README.md
+|-- tests/
+|   |── test.ps1             # PowerShell test helper
+|   |── TOOLS.md             # Tools used and team contributions
+└── README-TASK4.md
 ```
 
 The exact repository may contain additional source, benchmark and plotting files for Tasks 1–6.
