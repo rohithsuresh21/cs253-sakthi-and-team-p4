@@ -54,5 +54,22 @@ plt.legend()
 plt.grid(True, alpha=0.3)
 plt.savefig("results/figures/prim_heap_size.png", dpi=150, bbox_inches="tight")
 plt.close()
+if os.path.exists("results/crossover.csv"):
+    cross = read("results/crossover.csv")
+    plt.figure(figsize=(8, 5))
+    for n in sorted(set(int(r["n"]) for r in cross)):
+        rows = [r for r in cross if int(r["n"]) == n]
+        plt.plot([float(r["density_percent"]) for r in rows], [float(r["margin_percent"]) for r in rows], marker="o", label="n=" + str(n))
+    plt.axhline(0, color="black", linewidth=0.8)
+    plt.xlabel("density (% of all possible edges)")
+    plt.ylabel("Prim faster than Kruskal by (%)")
+    plt.title("Crossover: above 0 means Prim is faster")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig("results/figures/crossover.png", dpi=150, bbox_inches="tight")
+    plt.close()
+
+print("figures saved in results/figures")
+
 
 
