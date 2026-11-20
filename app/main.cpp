@@ -10,7 +10,7 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    char structure = 'A';
+    char structure = '\0';
     bool compress = true;
     for (int i = 1; i < argc; i++) {
         string a = argv[i];
@@ -27,9 +27,9 @@ int main(int argc, char** argv) {
             return 0;
         }
     }
-    if (structure != 'A' && structure != 'B') {
-        cerr << "use: run --structure A|B\n";
-        return 1;
+    if (structure == '\0') {
+    cerr << "Choose A (Kruskal) or B (Prim): ";
+    cin >> structure;
     }
 
     Graph g;
