@@ -1,6 +1,6 @@
 # Measurements: how fast is each algorithm?
 
-**Files:** `bench/benchmark.cpp`, `bench/plot.py`, `bench.ps1` · **Data:** `results/timings_*.csv`, `prim_heap.csv`, `union_find.csv`
+**Files** [`benchmark.cpp`](benchmark.cpp), [`bench.ps1`](bench.ps1), and [`plot.py`](plot.py) · **Data** [`results/`](../results/)
 
 ## How we measured
 * Random connected graphs with n = 200, 500, 1,000 and 2,000 buildings.
@@ -12,7 +12,7 @@
 
 ![Runtime versus density](../results/figures/runtime_vs_density.png)
 
-| n | m | Kruskal (ms) | Prim (ms) | Faster |
+| n | m | Kruskal (median ms) | Prim (median ms) | Faster |
 |---:|---:|---:|---:|---|
 | 1,000 | 3,000 | 0.217 | 0.795 | Kruskal 3.67x |
 | 1,000 | 50,000 | 7.238 | 8.349 | Kruskal 1.15x |
@@ -31,7 +31,27 @@
 * `union_find.csv` reports medians from the fresh path-compression run. `union_find_raw.csv` contains all five trials per mode and setting.
 
 ## Run it
-```
+
+Run these commands from the repository root. The benchmark commands overwrite
+the corresponding CSVs in `results/`. Plotting requires Python 3 and
+Matplotlib. To redraw from existing data, run `python3 bench/plot.py` on
+Linux/macOS or `python bench/plot.py` in Windows PowerShell.
+
+**Windows PowerShell**
+
+```powershell
 .\bench\bench.ps1
 ```
-This rebuilds the CSVs and figures. To redraw from the existing CSVs, run `python bench/plot.py`.
+
+**Linux/macOS**
+
+```sh
+g++ -std=c++17 -O2 bench/benchmark.cpp -o /tmp/mst-benchmark
+/tmp/mst-benchmark
+g++ -std=c++17 -O2 bench/crossover_analysis.cpp bench/adversarial_cases.cpp -o /tmp/crossover_analysis
+/tmp/crossover_analysis 5 results/crossover.csv
+python3 bench/plot.py
+```
+
+See the [crossover notes](../results/README.md) for the median CSV schema, the
+text report, and commands for redrawing only the crossover figure.

@@ -1,0 +1,11 @@
+# Executables produced by the launchers and the test/benchmark scripts.
+/program
+/program.exe
+/run.exe
+/test_structA.exe
+/test_structB.exe
+/test_all.exe
+/test_adversarial.exe
+/benchmark.exe
+/crossover.exe
+/crossover_report.exe

@@ -1,8 +1,6 @@
 @echo off
-cd /d "%~dp0"
+g++ -std=c++17 -O2 "%~dp0app\main.cpp" -o "%~dp0program.exe" 1>&2
+if errorlevel 1 exit /b %errorlevel%
 
-g++ -std=c++17 -O2 app\main.cpp -o program.exe
-
-if errorlevel 1 exit /b 1
-
-program.exe %*
+"%~dp0program.exe" %*
+exit /b %errorlevel%

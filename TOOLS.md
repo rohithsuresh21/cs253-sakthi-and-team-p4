@@ -5,12 +5,11 @@
 | Tool | Purpose | What we checked or changed |
 |---|---|---|
 | Claude (AI assistant) | Assisted with initial code, tests, benchmark programs and plotting script. | Reviewed and modified the suggestions; each member tested their assigned task. |
+| OpenAI Codex (AI assistant) | Assisted with converting and merging the crossover median-runtime pipeline and auditing submission files. | Regenerated crossover measurements and figures for the median pipeline. Checked launcher and documentation changes against the source, samples, and tests during the submission audit. |
 | C++ / g++ | Implementing, compiling and running the two planners. | Fixed compilation/runtime issues and checked program output. |
 | Python / Matplotlib | Processing benchmark results and making charts. | Checked that chart data matched the recorded measurements. |
 
 ## Individual Contributions
-
-Replace each placeholder with the member's name and the work they actually completed.
 
 ### Member 1: Rohit MS — Kruskal Planner
 - **Work:** Implemented the edge sorting and Kruskal planner; selected a cable only when it joins two previously separate groups.
