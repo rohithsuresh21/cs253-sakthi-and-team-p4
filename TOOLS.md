@@ -4,14 +4,15 @@
 
 | Tool | Purpose | What we checked or changed |
 |---|---|---|
-| Claude (AI assistant) | Assisted with initial code, tests, benchmark programs and plotting script. | Reviewed and modified the suggestions; each member tested their assigned task. |
+| Claude (AI assistant) | Assisted with initial code, tests, benchmark programs and plotting script. Also used to build the presentation slides, to run a final end-to-end check of the repository, and to draft the report and README fixes. | Reviewed and modified the suggestions; each member tested their assigned task. |
+| ChatGPT (AI assistant) | Used to review the submission against the project brief (slide format and slide count, README completeness). | Its suggestions were checked against the project brief before any change was made. |
 | OpenAI Codex (AI assistant) | Assisted with converting and merging the crossover median-runtime pipeline and auditing submission files. | Regenerated crossover measurements and figures for the median pipeline. Checked launcher and documentation changes against the source, samples, and tests during the submission audit. |
 | C++ / g++ | Implementing, compiling and running the two planners. | Fixed compilation/runtime issues and checked program output. |
 | Python / Matplotlib | Processing benchmark results and making charts. | Checked that chart data matched the recorded measurements. |
 
 ## Individual Contributions
 
-### Member 1: Rohit MS — Kruskal Planner
+### Member 1: Rohith M S — Kruskal Planner
 - **Work:** Implemented the edge sorting and Kruskal planner; selected a cable only when it joins two previously separate groups.
 - **Tested:** Checked edge order, cycle prevention and the resulting MST on sample graphs.
 - **Understood:** How Kruskal builds an MST from the cheapest available cables.

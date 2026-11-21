@@ -34,7 +34,16 @@ A campus network should connect all buildings at minimum cable cost and divide t
 | Bhavan Jeeth | Measurement / Q5 | Timing experiments, path-compression comparison, Prim heap-size recording and figures. |
 | Kavin Krishnan | Adversarial / Q6 | Challenging graph families and density-based crossover evaluation. |
 
-**Main-commit links:** To be inserted with the final member information. The repository link above and its Git history currently provide the project-level evidence.
+**Main-commit links:** each member's merged pull request, and key commits.
+
+| Member | Pull request | Key commits |
+|---|---|---|
+| Rohith M. S. | [#2](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/pull/2) | [heapSort](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/4ae2521), [UnionFind](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/f23a043), [Kruskal](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/9ab1136) |
+| Rehan Sharief | [#5](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/pull/5) | [prim.h](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/9883d7e), [minheap.h](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/7b83185) |
+| Sakthi P. | [#3](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/pull/3) | [3b0a70c](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/3b0a70c), [ff0a42a](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/ff0a42a) |
+| Parthasarathy S. | [#6](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/pull/6) | [certificate LLONG_MIN fix](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/f89367f) |
+| Bhavan Jeeth A. | [#4](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/pull/4) | [median benchmark](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/0489e43), [plot.py](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/d7870f8) |
+| Kavin Krishnan S. | [#1](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/pull/1) | [crossover_analysis.cpp](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/78e8fac), [crossover report](https://github.com/rohithsuresh21/cs253-sakthi-and-team-p4/commit/e6eafa1) |
 
 ## 2. Problem and supported operations
 
@@ -249,7 +258,7 @@ A more general adjacency scheme that inserted both directed representations woul
 
 **Proof.** Run Kruskal's algorithm and pause when exactly k components remain. Its selected edges are the n − k lightest edges of a suitable MST, so its components are exactly the zones obtained by removing k − 1 heaviest MST edges (ties may be resolved in different but equivalent ways). Let *s* be the cheapest original edge joining two distinct current components. The spacing of this partition is *s*.
 
-Suppose another partition into k zones had spacing strictly greater than *s*. All edges of weight at most *s* would then have both endpoints inside the same zone. Yet Kruskal's next accepted edge has weight *s* and merges two of its k components into k − 1 components. All k − 1 resulting components would need to lie completely within the proposed k zones; this is impossible, because k nonempty zones cannot contain k − 1 connected components without splitting one. Consequently some original edge of weight at most *s* must cross the proposed partition, contradicting the claimed larger spacing. Hence no k-partition has spacing exceeding *s*. Equivalently, *s* is the lightest removed MST-edge weight.
+Suppose another partition into k zones had spacing strictly greater than *s*. Then every original edge of weight at most *s* has both endpoints in the same zone. Each of the k components that Kruskal has built at this point is connected by edges of weight at most *s*, so each component lies entirely inside one zone. There are k components and k non-empty zones, so every zone contains exactly one component, and the proposed partition is the same as Kruskal's. But Kruskal's partition has spacing exactly *s*, which contradicts the assumed strictly larger spacing. Hence no k-partition has spacing exceeding *s*. Equivalently, *s* is the lightest removed MST-edge weight.
 
 ### Q6. Measured crossover between Prim and Kruskal
 
@@ -280,7 +289,7 @@ For a fair rerun, preserve the exact source revision, compiler options, graph se
 3. T. H. Cormen, C. E. Leiserson, R. L. Rivest and C. Stein, *Introduction to Algorithms*, 3rd ed., MIT Press, 2009, Chapters 21 and 23.
 4. J. B. Kruskal, “On the Shortest Spanning Subtree of a Graph and the Traveling Salesman Problem,” *Proceedings of the American Mathematical Society*, 7(1), 1956.
 5. R. C. Prim, “Shortest Connection Networks and Some Generalizations,” *Bell System Technical Journal*, 36(6), 1957.
-6. Source-specific experimental notes supplied by the teammates for testing, runtime measurements and hard-case/crossover analysis. AI-assisted coding/documentation use is documented in the repository's `TOOLS.md`; the final version should list the tools used to prepare this report as well.
+6. Source-specific experimental notes supplied by the teammates for testing, runtime measurements and hard-case/crossover analysis. All AI-assisted coding, documentation and report-preparation use is declared in the repository's `TOOLS.md`.
 
 ### Reproduction checklist
 
