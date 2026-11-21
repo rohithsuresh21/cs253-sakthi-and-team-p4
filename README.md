@@ -350,3 +350,4 @@ link `bench/adversarial_cases.cpp`.
 | 4. Correctness and testing | Parthasarathy S | 250002046 | Sarathy-10 | [Q4: Prim's binary min-heap and lazy-deletion complexity](REPORT.md#q4-prims-lazy-heap-complexity-and-heap-bound) |
 | 5. Measurements and charts | Bhavan Jeeth A | 250004010 | bhavan12391 | [Q5: Maximum-spacing k-zone clustering using MST](REPORT.md#q5-why-removing-the-k--1-heaviest-mst-edges-maximizes-spacing) |
 | 6. Hard cases and crossover | Kavin Krishnan S | 250005022 | kavin-krishnan | [Q6: Measured crossover between Kruskal and Prim](REPORT.md#q6-measured-crossover-between-prim-and-kruskal) |
+
