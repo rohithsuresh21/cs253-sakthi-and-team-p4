@@ -1,6 +1,6 @@
 # The application: from input to output
 
-**Files:** `app/main.cpp`, `app/generator.cpp`, `src/common/graph.cpp`, `bfs.cpp`, `zones.cpp`, `build.ps1`
+**Entry point** [`app/main.cpp`](main.cpp)
 
 ## What it does
 Reads a campus, builds the cheapest cabling, and splits it into `k` zones.
@@ -8,10 +8,10 @@ Reads a campus, builds the cheapest cabling, and splits it into `k` zones.
 ```mermaid
 flowchart LR
     A[input file] --> B[readGraph<br/>check the numbers]
-    B --> C[connected?<br/>bfs.cpp]
+    B --> C[connected?<br/>bfs.h]
     C -->|no| D[DISCONNECTED]
     C -->|yes| E[Kruskal or Prim]
-    E --> F[zones.cpp<br/>zone spacing]
+    E --> F[zones.h<br/>zone spacing]
     F --> G[print total, spacing]
 ```
 
@@ -29,20 +29,18 @@ For `tests/sample1.in` the output is `16` and `7`.
 
 | File | Job |
 |---|---|
-| `graph.cpp` | `Edge`, `Graph`, `MSTResult` and `readGraph`. Rejects bad input (n < 2, k out of range, building out of range) and converts to 0-based numbers. |
-| `bfs.cpp` | `isConnected`: walks out from building 0 and checks that all n buildings are reached. |
-| `zones.cpp` | `zoneSpacing`: sorts the n-1 MST cables and returns the one at position n-k. That is the lightest of the k-1 heaviest cables, i.e. the cheapest cable we cut to make k zones. |
-| `generator.cpp` | Makes a random campus: buildings at random spots in a 1000 x 1000 square, a cable between any two within the radius, cost = distance x 1000. |
+| [`src/common/graph.h`](../src/common/graph.h) | `Edge`, `Graph`, `MSTResult` and `readGraph`. Rejects bad input (n < 2, k out of range, building out of range) and converts to 0-based numbers. |
+| [`src/common/bfs.h`](../src/common/bfs.h) | `isConnected`: walks out from building 0 and checks that all n buildings are reached. |
+| [`src/common/zones.h`](../src/common/zones.h) | `zoneSpacing`: sorts the n-1 MST cables and returns the one at zero-based index `n - k`. That is the lightest of the k-1 heaviest cables, i.e. the cheapest cable we cut to make k zones. |
+| [`app/generator.h`](generator.h) | Makes a random campus: buildings at random spots in a 1000 x 1000 square, a cable between any two within the radius, cost = distance × 1,000 rounded to the nearest integer, with a minimum cost of 1. |
 | `main.cpp` | Reads options, runs the chosen algorithm, prints the answer. |
 
 ## Zones, in one picture
 For sample 1 the MST cables are 2, 3, 4, 7. With k = 2 we cut the heaviest one (7). Two zones remain, `{1,2,3,4}` and `{5}`, and the spacing is **7**.
 
 ## Commands
-```
-.\build.ps1
-Get-Content tests\sample1.in | .\run --structure A
-Get-Content tests\sample1.in | .\run --structure B
-.\run --structure A --no-compress
-.\run --generate 1000 60 5 1 > campus.in      # n, radius, k, seed
-```
+
+Follow the [root launcher instructions](../README.md#7-build-and-run) for Linux,
+macOS, Windows PowerShell, and Windows Command Prompt. The application reads
+graph input from standard input. Invoke the generator as
+`--generate <n> <radius> <k> <seed>` to write a graph to standard output.

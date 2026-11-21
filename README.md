@@ -21,7 +21,7 @@ We solved it twice, with two different algorithms, and compared them on correctn
 |---|---|---|
 | Algorithm | **Kruskal** | **Prim** |
 | Idea | Sort all cables, add the cheapest that creates no cycle | Grow one tree outward from a start building |
-| Data structures | Heapsort + union-find (rank + path compression) | Binary min-heap with lazy deletion |
+| Data structures | Custom heapsort + union-find (rank + path compression) | Adjacency lists + custom binary min-heap with lazy deletion |
 | Time | O(m log m) | O(m log m) |
 | Source | `src/structA/` | `src/structB/` |
 
@@ -50,7 +50,8 @@ n m k          n buildings, m possible cables, k zones
 u v w          one line per cable: building u, building v, cost w   (1-indexed)
 ```
 
-Validation rules: `n >= 2`, `2 <= k <= n`, every building number is in `1..n`.
+Validation rules include `n >= 2`, `m >= 0`, `2 <= k <= n`, and building numbers
+in `1..n`. Invalid input produces a diagnostic on standard error and exit code 2.
 
 ### Output format
 
@@ -185,7 +186,7 @@ The runtime and path-compression results report the **median of five timed runs*
 
 ![Runtime versus density](results/figures/runtime_vs_density.png)
 
-| n | cables (m) | cables / building | Kruskal (ms) | Prim (ms) | Winner |
+| n | cables (m) | cables / building | Kruskal (median ms) | Prim (median ms) | Winner |
 |---:|---:|---:|---:|---:|---|
 | 200 | 600 | 3.0000 | 0.062 | 0.196 | Kruskal 3.17x |
 | 200 | 19,900 | 99.5000 | 2.684 | 3.924 | Kruskal 1.46x |
@@ -243,7 +244,7 @@ Heap behaviour of Prim ([`results/prim_heap.csv`](results/prim_heap.csv)):
 
 ![Union-find comparison](results/figures/union_find_comparison.png)
 
-| n | m | With compression (ms) | Without (ms) | Gain |
+| n | m | With compression (median ms) | Without (median ms) | Gain |
 |---:|---:|---:|---:|---:|
 | 2,000 | 20,000 | 0.956 | 0.972 | 1.6% |
 | 20,000 | 60,000 | 3.346 | 3.760 | 11.0% |
@@ -274,50 +275,81 @@ The comparison measures the full Kruskal call, with union by rank enabled in bot
 ### Known limitations
 
 * The certificate check is skipped on the 7 largest cases because it would take too long.
-* Runtime medians use the archived trials. The path-compression trials were rerun locally. Timings vary by machine and workload.
-* Costs are stored as `long long`, so totals up to about 9 x 10^18 are safe.
+* The runtime-by-density table uses the archived trials. The path-compression
+  and crossover tables use separate reruns. Timings vary by machine and workload.
+* Cable costs and accumulated totals must fit in `long long`.
+* The campus generator checks every building pair and accepts up to 20,000 buildings. A small radius can produce a disconnected graph.
 
 ---
 
 ## 7. Build and run
 
-Requirements: C++17 compiler (g++), Python 3 with matplotlib for the charts, Windows PowerShell (also works on Linux).
+Use a C++17-capable `g++` on PATH (for example, GCC via MinGW-w64/MSYS2
+on Windows). The Unix launcher uses Bash. Windows has PowerShell and Command
+Prompt launchers. PowerShell also runs the test and benchmark scripts.
+Python 3 with Matplotlib is needed to redraw the charts.
+
+Run these examples from the repository root. The launchers compile the
+application and print its answer to standard output.
+
+**Linux/macOS (Bash)**
+
+```bash
+./run --structure A < tests/sample1.in
+./run --structure B < tests/sample1.in
+./run --generate 1000 60 5 1 > campus.in
+```
+
+**Windows PowerShell**
 
 ```powershell
-.\build.ps1                                   # compile everything
-.\test.ps1                                    # all tests
-.\bench\bench.ps1                             # timings + figures
-
-Get-Content tests\sample1.in | .\run --structure A
-Get-Content tests\sample1.in | .\run --structure B
-.\run --structure A --no-compress             # disable path compression
-.\run --generate 1000 60 5 1 > campus.in      # n, radius, k, seed
+Get-Content -Raw tests/sample1.in | .\run.ps1 --structure A
+Get-Content -Raw tests/sample1.in | .\run.ps1 --structure B
 ```
+
+**Windows Command Prompt**
+
+```bat
+run.bat --structure A < tests\sample1.in
+run.bat --structure B < tests\sample1.in
+```
+
+Use `--structure A --no-compress` to run Kruskal with path compression
+disabled. To build once, run `g++ -std=c++17 -O2 app/main.cpp -o program`
+on Linux/macOS or use `-o program.exe` on Windows. Pass the same application
+arguments to the compiled executable.
+
+Run `.\tests\test.ps1` and `.\bench\bench.ps1` from the repository root in
+Windows PowerShell. See the [test instructions](tests/README.md) and
+[benchmark instructions](bench/README.md) for Unix commands and output paths.
 
 ## 8. Repository layout
 
-```
-app/            main.cpp, generator.cpp
-src/common/     graph.cpp (input), bfs.cpp, zones.cpp
-src/structA/    heapsort.cpp, unionfind.cpp, kruskal.cpp
-src/structB/    minheap.cpp, prim.cpp
-tests/          unit tests, random differential test, hard cases, samples
-bench/          benchmark.cpp, crossover_analysis.cpp, crossover_report.cpp, plot.py
-results/        CSV data and figures/ (charts)
-REPORT.md       answers to Q1 to Q6
-```
+| Path | Contents |
+|---|---|
+| [`app/`](app/) | `main.cpp` and `generator.h` |
+| [`src/common/`](src/common/) | `graph.h` (input), `bfs.h` (connectivity), and `zones.h` (spacing) |
+| [`src/structA/`](src/structA/) | `kruskal.h`, `heapsort.h`, and `unionfind.h` |
+| [`src/structB/`](src/structB/) | `prim.h` and `minheap.h` |
+| [`tests/`](tests/) | Unit tests, differential tests, and sample input/output |
+| [`bench/`](bench/) | Benchmarks, adversarial graph tools and tests, crossover report, and plotting |
+| [`results/`](results/) | CSV logs and generated figures |
+| [`TOOLS.md`](TOOLS.md) | Tool disclosures and individual contributions |
 
-All `.cpp` files include each other directly, so compile only the entry file (for example `app/main.cpp`) and never list `src/*.cpp` on the g++ line.
+The shared and algorithm implementations are headers. Compile `app/main.cpp`
+on its own. The adversarial graph tools, tests, and crossover analysis also
+link `bench/adversarial_cases.cpp`.
 
 ## 9. Team
 
-| Role | Name | Roll number | GitHub |
-|---|---|---|---|
-| 1. Kruskal (Structure A) | Rohith M S | 250005038 | rohithsuresh21 |
-| 2. Prim (Structure B) | Sheik Rehan Sharief | 250003071 | Rayhann12345 |
-| 3. Application | Sakthi P | 250003067 | sakthi220107-cmyk |
-| 4. Correctness and testing | Parthasarathy S | 250002046 | Sarathy-10 |
-| 5. Measurements and charts | Bhavan Jeeth A | 250004010 | bhavan12391 |
-| 6. Hard cases and crossover | Kavin Krishnan S| 250005022 | kavin-krishnan|
+| Role | Name | Roll number | GitHub | Analysis question |
+|---|---|---|---|---|
+| 1. Kruskal (Structure A) | Rohith M S | 250005038 | rohithsuresh21 | Undocumented |
+| 2. Prim (Structure B) | Sheik Rehan Sharief | 250003071 | Rayhann12345 | Undocumented |
+| 3. Application | Sakthi P | 250003067 | sakthi220107-cmyk | Undocumented |
+| 4. Correctness and testing | Parthasarathy S | 250002046 | Sarathy-10 | Q4 (Prim complexity and heap size) |
+| 5. Measurements and charts | Bhavan Jeeth A | 250004010 | bhavan12391 | Undocumented |
+| 6. Hard cases and crossover | Kavin Krishnan S | 250005022 | kavin-krishnan | Undocumented |
 
-AI assistance (Claude) is declared per member in `tests/TOOLS.md`.
+The repository history confirms the Q4 assignment. Individual assignments for
+Q1, Q2, Q3, Q5, and Q6 are undocumented in the repository.

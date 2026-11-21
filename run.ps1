@@ -1,14 +1,16 @@
 $ErrorActionPreference = "Stop"
 
-Set-Location $PSScriptRoot
-
-g++ -std=c++17 -O2 app/main.cpp -o program.exe
-
+$source = Join-Path $PSScriptRoot "app/main.cpp"
+$program = Join-Path $PSScriptRoot "program.exe"
+& g++ -std=c++17 -O2 $source -o $program | ForEach-Object { [Console]::Error.WriteLine($_) }
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Compilation failed."
-    exit 1
+    exit $LASTEXITCODE
 }
 
-& ".\program.exe" @args
+if ($MyInvocation.ExpectingInput) {
+    $input | & $program @args
+} else {
+    & $program @args
+}
 
 exit $LASTEXITCODE

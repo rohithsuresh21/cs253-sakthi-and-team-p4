@@ -1,6 +1,6 @@
 # Structure A: Kruskal
 
-**Files:** `src/structA/heapsort.cpp`, `unionfind.cpp`, `kruskal.cpp` · **Tests:** `tests/test_structA.cpp`
+**Files:** `src/structA/heapsort.h`, `unionfind.h`, `kruskal.h` · **Tests:** `tests/test_structA.cpp`
 
 ## The idea in one line
 Sort all cables from cheapest to dearest. Keep a cable only if it joins two buildings that are not connected yet.
@@ -19,9 +19,9 @@ flowchart LR
 
 | File | Job | Key point |
 |---|---|---|
-| `heapsort.cpp` | Sorts the cables by cost | Build a max-heap, then swap the root with the last item and sink the new root. Always O(m log m) |
-| `unionfind.cpp` | Answers "are these two buildings already connected?" | Each group has one leader. `join` returns `false` if both buildings share a leader |
-| `kruskal.cpp` | Puts them together | Stops after n-1 cables. Fewer than n-1 means `DISCONNECTED` |
+| `heapsort.h` | Sorts the cables by cost | Build a max-heap, then swap the root with the last item and sink the new root. Always O(m log m) |
+| `unionfind.h` | Answers "are these two buildings already connected?" | Each group has one leader. `join` returns `false` if both buildings share a leader |
+| `kruskal.h` | Puts them together | Stops after n-1 cables. Fewer than n-1 means `DISCONNECTED` |
 
 ## The two union-find tricks
 * **Rank**: hang the shorter tree under the taller one, so trees stay short. Rank is tree height, not cable cost.
@@ -37,16 +37,20 @@ The cables 5, 6 and 8 are skipped because they would close a loop.
 
 ![Union-find comparison](../../results/figures/union_find_comparison.png)
 
-| n | m | With (ms) | Without (ms) | Gain |
+| n | m | With (median ms) | Without (median ms) | Gain |
 |---:|---:|---:|---:|---:|
-| 2,000 | 20,000 | 2.548 | 2.580 | 1.2% |
-| 50,000 | 250,000 | 57.261 | 62.258 | 8.0% |
+| 2,000 | 20,000 | 0.956 | 0.972 | 1.6% |
+| 50,000 | 250,000 | 17.493 | 21.909 | 20.2% |
 
-A small gain that grows with n.
+These rows show the first and last settings in [the path-compression results](../../results/union_find.csv), with five timed trials per mode.
 
 ## How to check it
+From the repository root on Linux/macOS:
+
+```sh
+g++ -std=c++17 -O2 tests/test_structA.cpp -o /tmp/test_structA
+/tmp/test_structA
 ```
-g++ -std=c++17 -O2 -o test_structA tests/test_structA.cpp
-.\test_structA
-```
+
+On Windows, see the [test instructions](../../tests/README.md).
 Expected: 212 checks passed.
