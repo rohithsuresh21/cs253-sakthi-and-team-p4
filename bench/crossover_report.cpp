@@ -13,8 +13,8 @@ struct Record {
     int n;
     long long m;
     double density;
-    double primMs;
-    double kruskalMs;
+    double primMedianMs;
+    double kruskalMedianMs;
     double ratio;
 };
 
@@ -53,11 +53,21 @@ int main(int argc, char* argv[]) {
             );
 
         std::string line;
-        std::getline(file, line);
+        if (!std::getline(file, line))
+            throw std::runtime_error("Missing CSV header");
+
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
+        if (line != "family,n,m,density,seed,repetitions,"
+                    "prim_median_ms,kruskal_median_ms,ratio,mst_cost,status")
+            throw std::runtime_error("Expected a crossover CSV with median runtimes");
 
         std::map<int, std::vector<Record>> groups;
 
         while (std::getline(file, line)) {
+            if (!line.empty() && line.back() == '\r')
+                line.pop_back();
             if (line.empty()) continue;
 
             auto fields = splitCSV(line);
@@ -72,7 +82,7 @@ int main(int argc, char* argv[]) {
                     "Unverified benchmark record"
                 );
 
-            
+            // Analyze density sweeps separately.
             if (fields[0] != "random")
                 continue;
 
@@ -116,8 +126,8 @@ int main(int argc, char* argv[]) {
                 std::cout
                     << "  E=" << r.m
                     << " Density=" << r.density * 100 << "%"
-                    << " Prim=" << r.primMs << "ms"
-                    << " Kruskal=" << r.kruskalMs << "ms"
+                    << " Prim median=" << r.primMedianMs << "ms"
+                    << " Kruskal median=" << r.kruskalMedianMs << "ms"
                     << " Ratio=" << r.ratio
                     << " Winner=" << current << '\n';
 

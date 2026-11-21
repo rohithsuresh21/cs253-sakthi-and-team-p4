@@ -102,10 +102,15 @@ void verify(const MSTResult& result, const OracleResult& expected,
     }
 }
 
-double average(const std::vector<double>& values) {
-    double sum = 0.0;
-    for (double value : values) sum += value;
-    return values.empty() ? 0.0 : sum / values.size();
+double median(std::vector<double> values) {
+    std::sort(values.begin(), values.end());
+
+    size_t n = values.size();
+
+    if (n % 2 == 1)
+        return values[n / 2];
+
+    return (values[n / 2 - 1] + values[n / 2]) / 2;
 }
 
 template <typename Function>
@@ -150,23 +155,23 @@ void benchmark(const mstbench::Graph& source, const std::string& family,
         kruskalTimes.push_back(kruskalMs);
     }
 
-    const double primAverage = average(primTimes);
-    const double kruskalAverage = average(kruskalTimes);
-    const double ratio = primAverage / std::max(kruskalAverage, 1e-12);
+    const double primMedianMs = median(primTimes);
+    const double kruskalMedianMs = median(kruskalTimes);
+    const double ratio = primMedianMs / std::max(kruskalMedianMs, 1e-12);
     const long long m = static_cast<long long>(source.edges.size());
     const double density = 2.0 * m / (1.0 * source.n * (source.n - 1));
 
     csv << family << ',' << source.n << ',' << m << ','
         << std::setprecision(12) << density << ',' << seed << ','
-        << repetitions << ',' << primAverage << ',' << kruskalAverage << ','
+        << repetitions << ',' << primMedianMs << ',' << kruskalMedianMs << ','
         << ratio << ','
         << (expected.connected ? std::to_string(expected.total) : "DISCONNECTED")
         << ",PASS\n";
     csv.flush();
 
     std::cout << family << " V=" << source.n << " E=" << m
-              << " Prim=" << primAverage << " ms"
-              << " Kruskal=" << kruskalAverage << " ms"
+              << " Prim median=" << primMedianMs << " ms"
+              << " Kruskal median=" << kruskalMedianMs << " ms"
               << " Ratio=" << ratio << '\n';
 }
 
@@ -189,7 +194,7 @@ int main(int argc, char* argv[]) {
 
         std::ofstream csv(csvPath);
         if (!csv) throw std::runtime_error("Cannot open crossover CSV");
-        csv << "family,n,m,density,seed,repetitions,prim_ms,kruskal_ms,ratio,mst_cost,status\n";
+        csv << "family,n,m,density,seed,repetitions,prim_median_ms,kruskal_median_ms,ratio,mst_cost,status\n";
 
         constexpr std::uint64_t seed = 42;
         for (int n : {500, 1000, 2000}) {

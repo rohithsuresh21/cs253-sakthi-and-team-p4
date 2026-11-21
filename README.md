@@ -173,7 +173,7 @@ Other suites:
 | `test_structA` (Kruskal unit tests) | 212 checks passed |
 | `test_structB` (Prim unit tests) | 211 checks passed |
 | Sample 1 | `16` and `7` |
-| Hard cases (`tests/hard_cases.cpp`) | tricky graph shapes written by member 6 (see the file for the list) |
+| Adversarial cases (`bench/test_adversarial.cpp`) | Graph-generation checks for chains, stars, equal-weight graphs, bridges, disconnected graphs, and more |
 
 ---
 
@@ -205,15 +205,18 @@ The full 24-row table is in `results/timings_summary.csv`. **Kruskal wins 22 of 
 
 ![Crossover](results/figures/crossover.png)
 
-Measured by sweeping density from 0.5% to 100% of all possible cables (`results/crossover.csv`). A negative margin means Kruskal is faster.
+The crossover sweep uses random connected graphs with 500, 1,000, and 2,000
+vertices at densities from about 1% to 100%. Each point compares the median
+runtimes from five fresh in-process trials per algorithm. A negative margin
+means Kruskal is faster. The [crossover benchmark notes](results/README.md)
+describe the timing method, correctness checks, and how to reproduce the
+[measurements](results/crossover.csv).
 
-| n | Density when Prim first wins | Margin at 100% density |
-|---:|---|---:|
-| 500 | about 40% (m = 49,900) | Prim 38.9% faster |
-| 1,000 | about 10% (m = 49,950) | Prim 57.9% faster |
-| 2,000 | about 5% (m = 99,950) | Prim 70.4% faster |
-
-The crossover moves toward **sparser** graphs as `n` grows. In terms of cables per building it sits between roughly 25 and 50.
+| Vertices | First tested density where Prim wins | Prim median runtime reduction at 100% |
+|---:|---:|---:|
+| 500 | 20.0% (m = 24,950) | 45.9% |
+| 1,000 | 5.0% (m = 24,975) | 63.1% |
+| 2,000 | 2.5% (m = 49,975) | 78.3% |
 
 ### 5.3 Why they diverge
 
@@ -264,7 +267,7 @@ The comparison measures the full Kruskal call, with union by rank enabled in bot
 
 1. **Both algorithms are correct.** 1,207 random cases, 0 failures, and 1,050 answers independently certified as true MSTs. Totals and spacings always agreed.
 2. **Choose by density.** At 2,000 buildings, Kruskal 4.22x on the graph with 6,000 cables, and Prim 4.89x on the complete graph. These ratios use the recorded medians.
-3. **The crossover is around 25 to 50 cables per building**, or about 5% to 40% density depending on `n`, moving to sparser graphs as `n` grows.
+3. **The crossover depends on graph size and density.** The density sweep shows where each algorithm had the lower median on the measured graphs.
 4. **Trade-off**: Prim's lazy heap needs O(m) memory; Kruskal needs O(m) for the sorted copy as well, but has the more predictable running time.
 5. **A real campus is sparse** (a building connects to a handful of neighbours), so Kruskal is the better practical choice for this application.
 
@@ -299,7 +302,7 @@ src/common/     graph.cpp (input), bfs.cpp, zones.cpp
 src/structA/    heapsort.cpp, unionfind.cpp, kruskal.cpp
 src/structB/    minheap.cpp, prim.cpp
 tests/          unit tests, random differential test, hard cases, samples
-bench/          benchmark.cpp, crossover.cpp, plot.py
+bench/          benchmark.cpp, crossover_analysis.cpp, crossover_report.cpp, plot.py
 results/        CSV data and figures/ (charts)
 REPORT.md       answers to Q1 to Q6
 ```

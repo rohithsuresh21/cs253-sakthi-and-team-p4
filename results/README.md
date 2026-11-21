@@ -1,42 +1,46 @@
-# Hard cases and the crossover
+# Adversarial graphs and the crossover benchmark
 
-**Files:** `tests/hard_cases.cpp`, `bench/crossover.cpp` · **Data:** `results/crossover.csv`, `results/figures/crossover.png`
+`bench/test_adversarial.cpp` checks the graph generator on chains, stars,
+random connected graphs, equal-weight graphs, bridge graphs, disconnected
+graphs, and complete graphs. It also checks determinism, large graphs, and
+invalid inputs.
 
-## Part 1: graphs designed to break things
-Random graphs are friendly. These are not. For each graph both algorithms must agree on the answer and on whether it is connected, and their speed is recorded.
+`bench/crossover_analysis.cpp` runs both algorithms on the same graph and
+alternates which algorithm runs first. Every trial checks connectivity, MST
+cost, and cluster spacing against a reference result. The benchmark measures
+in-process runtime in milliseconds.
 
-| Case | Why it is hard |
-|---|---|
-| `chain`, `chain_k_equals_n` | A long path: deep union-find trees; k = n cuts every cable |
-| `star` | One building with 20,000 neighbours |
-| `complete_equal` | Every cable costs the same: the MST is not unique |
-| `tie_heavy_sparse`, `tie_heavy_dense` | Only a few distinct costs, many ties |
-| `complete_random`, `dense_stale_heavy` | Huge heaps, many stale pops in Prim |
-| `disconnected_big`, `isolated_vertex` | Must print `DISCONNECTED` |
-| `two_vertices` | Smallest possible campus |
-| `zero_weight_edges`, `huge_weights` | Costs of 0 and very large costs |
-
-Expected last line: `hard cases mismatches: 0`.
-
-## Part 2: where does Prim overtake Kruskal?
-We swept the density from 0.5% to 100% of all possible cables for n = 500, 1,000 and 2,000.
+## Crossover measurements
 
 ![Crossover](figures/crossover.png)
 
-| n | Prim first wins at | Prim's lead at 100% |
-|---:|---|---:|
-| 500 | about 40% density (m = 49,900) | 38.9% |
-| 1,000 | about 10% density (m = 49,950) | 57.9% |
-| 2,000 | about 5% density (m = 99,950) | 70.4% |
+The figure uses random connected graphs with 500, 1,000, and 2,000 vertices at
+densities from about 1% to 100% of all possible edges.
+[`crossover.csv`](crossover.csv) also includes the structural adversarial cases
+and a separate complete-graph series. Every setting uses five fresh timed
+trials per algorithm.
 
-**Answer:** the crossover is not one fixed number. The bigger the campus, the sooner Prim wins. Below that point Kruskal is faster, above it Prim is.
+The CSV columns `prim_median_ms` and `kruskal_median_ms` give the middle sorted
+runtime for an odd trial count and the midpoint of the two middle sorted
+runtimes for an even count. The ratio divides Prim's median by Kruskal's median.
+The figure shows the percentage reduction in median runtime with Prim relative
+to Kruskal. Negative values favor Kruskal. Timing varies by machine and workload.
 
-Timings on small graphs are noisy, so read the crossover as a range, not an exact point.
+[`crossover/results.csv`](crossover/results.csv) records the earlier seven-trial
+`Kavin` sweep. It uses a different set of graph sizes and includes executable
+startup and input/output in the measured time.
 
-## Run it
+## Reproduce the current figure
+
+Run from the project root with a C++17 compiler and Python with Matplotlib.
+
+```sh
+g++ -std=c++17 -O2 bench/crossover_analysis.cpp bench/adversarial_cases.cpp -o /tmp/crossover_analysis
+g++ -std=c++17 -O2 bench/crossover_report.cpp -o /tmp/crossover_report
+/tmp/crossover_analysis 5 results/crossover.csv
+/tmp/crossover_report results/crossover.csv
+python3 bench/plot.py results/crossover.csv results/figures/crossover.png
 ```
-g++ -std=c++17 -O2 -o hard_cases tests/hard_cases.cpp
-.\hard_cases
-g++ -std=c++17 -O2 -o crossover bench/crossover.cpp
-.\crossover
-```
+
+Run `python3 bench/plot.py` to rebuild all the figures from their existing CSVs.
+The crossover report and plot require explicit median runtime columns.
